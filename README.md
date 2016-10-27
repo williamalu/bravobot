@@ -8,5 +8,5 @@ Code for an autonomous ground vehicle for ENGR3390 during FA2016.
 * Jules Risbec
 * [Sunny Shroff](https://github.com/sunnyshroff)
 * [Isaac Vandor](https://github.com/isaacvandor)
-* Judy Xu
+* [Judy Xu](https://github.com/xiaozhengxu)
 * Lydia Zuehsow
