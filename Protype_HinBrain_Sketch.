@@ -1,0 +1,59 @@
+//Basic Hind Brain RoadKill Test Code
+//Version 1.0 10/27/16
+
+//Set up Arduino Ports and Pins to support Robot
+int ledPin = 13;
+int actOutPin = 4;
+int delayPeriod = 100;
+int command = 'g'; // 'g' is go command from midbrain, 's' is stop
+
+void setup() {
+  // put your setup code here, to run once:
+  pinMode (ledPin, OUTPUT); // sets up Blinky "alive" light
+  pinMode (actOutPin, OUTPUT); //sets up Act binary output port
+  Serial.begin(9600); //send and recieve at 9600 baud
+  Serial.println("Have Midbrain send 1 or 0 to Hinbrain pin 4");
+}
+
+
+// Run Hindbrain loop until commaned to stop by Midbrain
+void loop() {
+
+//Read Midbrain commands
+  if (Serial.available()){
+   command = Serial.read();
+   Serial.println("Midbrain sent:");
+   Serial.println(command);
+  }
+
+//Sense: Read Robot Sensors
+
+//Think: Run low level cognition and safety code
+  if (command != 's'){
+  blink();
+  }
+
+//Act: Run actuators and behavior lights 
+  toggleActPin4(command);
+  
+//Write: status data up to MidBrain
+  if (command == 's'){
+    Serial.println(" hind brain stopped");
+   }
+}
+
+void blink(){
+    digitalWrite (ledPin, HIGH);
+    delay(delayPeriod);
+    digitalWrite (ledPin, LOW);
+    delay(delayPeriod);
+  }
+
+void toggleActPin4 (char pinState){
+  if (pinState =='1'){
+    digitalWrite(actOutPin,HIGH);
+    }
+  else if (command != '1'){
+    digitalWrite(actOutPin,LOW);
+    }
+  }
