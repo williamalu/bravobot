@@ -21,7 +21,8 @@ Run: python gps_print.py
 Camera:
 
 LIDAR:
-rosrun hokuyo_node hokuyo_node /dev/ttyACM0
+Run ls /dev/ttyACM* to find serial port
+rosrun urg_node urg_node _serial_port:=/dev/ttyACM*(Replace * with port number found from command above)
 
 To check if it's running:
 File is lidar.rviz located in documents folder
