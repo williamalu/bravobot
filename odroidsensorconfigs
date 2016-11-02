@@ -1,0 +1,28 @@
+Odroid Tips and Tricks
+As Taught by Sunny
+
+IMU:
+rosrun phidgets_imu phidgets_imu_node
+
+To check if it's working:
+rostopic list
+rostopic echo /imu/data_raw
+
+
+GPS:
+rosrun nmea_navsat_driver nmea_serial_driver _port:=/dev/ttyACM0 _baud:=115200 #Default baud rate is 115200
+
+To check if it's running:
+File is gps_print.py located in documents folder
+Run: python gps_print.py 
+%% Note: Will stop rosrun nmea... command if it is currently running
+
+
+Camera:
+
+LIDAR:
+rosrun hokuyo_node hokuyo_node /dev/ttyACM0
+
+To check if it's running:
+File is lidar.rviz located in documents folder
+Run: rviz -d lidar.rviz
