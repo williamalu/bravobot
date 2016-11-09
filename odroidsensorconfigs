@@ -22,8 +22,18 @@ Camera:
 
 LIDAR:
 Run ls /dev/ttyACM* to find serial port
-rosrun urg_node urg_node _serial_port:=/dev/ttyACM*(Replace * with port number found from command above)
+rosrun urg_node urg_node _serial_port:=/dev/ttyACM* (Replace * with port number found from command above)
 
 To check if it's running:
 File is lidar.rviz located in documents folder
 Run: rviz -d lidar.rviz
+
+OLDER LIDAR:
+Run ls /dev/ttyACM* to find serial port
+rosrun hokuyo_node hokuyo_node /dev/ttyACM* (Replace * with port number found from command above)
+
+If port is locked:
+Run sudo chmod a+rw /dev/ttyACM* (Replace * with port number found from command above) this unlocks that port
+
+To check if it's running:
+rostopic echo /scan
