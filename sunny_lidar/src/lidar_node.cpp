@@ -34,7 +34,7 @@ void laserData(const sensor_msgs::LaserScan msg){
     std_msgs::Int16MultiArray msgp;
     std::vector<short int> v(11,0);
     if (min<0.2){
-        v.[2] = 1;
+        v[2] = 1;
     }
     else if (min<1.0){
         v[5] = 1;
