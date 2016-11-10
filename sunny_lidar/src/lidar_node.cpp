@@ -21,18 +21,24 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& v){
 }
 
 ros::Publisher vel_pub;
-
+const int DEFAULT_SIZE = 22;
+const double ANGLE_INCREMENT = 0.00613592332229;
+const double TIME_INCREMENT = 9.76562514552e-05;
 
 void laserData(const sensor_msgs::LaserScan msg){
-    std::cout << msg.ranges;
+    std::cout << msg.ranges.size()<< "\n";
     float min = 6.0;
     for (int i = 0;i<msg.ranges.size();i++){
         if (msg.ranges[i]<min){
             min = msg.ranges[i];
         }
     }
+
+    //ranges[0] correspond to 90 degrees (to the right), and ranges[512] corresponds to
+    //-90 degrees (to the left)
+
     std_msgs::Int16MultiArray msgp;
-    std::vector<short int> v(11,0);
+    std::vector<short int> v(DEFAULT_SIZE,0);
     if (min<0.2){
         v[2] = 1;
     }
