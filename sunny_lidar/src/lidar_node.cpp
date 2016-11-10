@@ -34,19 +34,15 @@ void laserData(const sensor_msgs::LaserScan msg){
     std_msgs::Int16MultiArray msgp;
     std::vector<short int> v(11,0);
     if (min<0.2){
-        v.insert(v.begin()+2,1);
-        v.erase(v.begin()+3);
+        v.[2] = 1;
     }
     else if (min<1.0){
-        v.insert(v.begin()+5,1);
-        v.erase(v.begin()+6);
+        v[5] = 1;
     }
     else if (min<2.0){
-        v.insert(v.begin()+7,1);
-        v.erase(v.begin()+8);
+        v[7] = 1;
     }else if (min>=2.0){
-        v.insert(v.begin()+9,1);
-        v.erase(v.begin()+10);
+        v[9] = 1;
     }
     msgp.data = v;
     vel_pub.publish(msgp);
