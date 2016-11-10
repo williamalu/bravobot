@@ -20,8 +20,36 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& v){
     return os << std::endl;
 }
 
+ros::Publisher vel_pub;
+
+
 void laserData(const sensor_msgs::LaserScan msg){
     std::cout << msg.ranges;
+    float min = 6.0;
+    for (int i = 0;i<msg.ranges.size();i++){
+        if (msg.ranges[i]<min){
+            min = msg.ranges[i];
+        }
+    }
+    std_msgs::Int16MultiArray msgp;
+    std::vector<short int> v(11,0);
+    if (min<0.2){
+        v.insert(v.begin()+2,1);
+        v.erase(v.begin()+3);
+    }
+    else if (min<1.0){
+        v.insert(v.begin()+5,1);
+        v.erase(v.begin()+6);
+    }
+    else if (min<2.0){
+        v.insert(v.begin()+7,1);
+        v.erase(v.begin()+8);
+    }else if (min>=2.0){
+        v.insert(v.begin()+9,1);
+        v.erase(v.begin()+10);
+    }
+    msgp.data = v;
+    vel_pub.publish(msgp);
 }
 
 int main(int argc, char** argv){
@@ -29,7 +57,7 @@ int main(int argc, char** argv){
     ros::NodeHandle n;
 
     ros::Subscriber sub = n.subscribe("scan", 10, laserData);
-
+    vel_pub = n.advertise<std_msgs::Int16MultiArray>("obst/cmd_vel",1000);
     ros::spin();
 
     return 0;
