@@ -5,6 +5,7 @@
 #include <std_msgs/Float64.h>
 #include <std_msgs/Float64MultiArray.h>
 #include <geometry_msgs/Vector3Stamped.h>
+#include <sensor_msgs/NavSatFix.h>
 #include <vector>
 
 class WaypointFinder
@@ -17,7 +18,7 @@ public:
 	void FindWaypoint(const std_msgs::Int32ConstPtr &msg);
 
 	void IMUCallback(const geometry_msgs::Vector3Stamped::ConstPtr &msg);
-	void GPSCallback(const std_msgs::Int32ConstPtr &msg);
+	void GPSCallback(const sensor_msgs::NavSatFix &msg);
 	void InputCallback(const std_msgs::Float64MultiArray::ConstPtr &msg);
 
 
