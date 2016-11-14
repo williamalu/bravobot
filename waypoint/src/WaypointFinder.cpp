@@ -3,23 +3,29 @@
 
 void WaypointFinder::FindWaypoint(const std_msgs::Int32ConstPtr &msg){
 
-	std::cout << "yo" << std::endl;
-
 }
 
-void WaypointFinder::InputCallback(const std_msgs::Int32ConstPtr &msg){
-	
+void WaypointFinder::InputCallback(const std_msgs::Float64MultiArray::ConstPtr &msg){
+	if(!hasInput){
+	 	hasInput = true;
+	}
+	waypointx = msg->data[0];
+	waypointy = msg->data[1];
 }
 
 void WaypointFinder::GPSCallback(const std_msgs::Int32ConstPtr &msg){
-	
+
 }
 
-void WaypointFinder::IMUCallback(const std_msgs::Int32ConstPtr &msg){
-	
+void WaypointFinder::IMUCallback(const geometry_msgs::Vector3Stamped::ConstPtr &msg){
+	headingx = msg->vector.x;
+	headingy = msg->vector.y;
+	headingz = msg->vector.z;
 }
 
 void WaypointFinder::init(int argc, char* argv[]){
+	//Initialize input flag
+	hasInput = false;
 
 	subInput = nh.subscribe("Input", 10, &WaypointFinder::InputCallback, this);
 	subGPS = nh.subscribe("GPS", 10, &WaypointFinder::GPSCallback, this);
