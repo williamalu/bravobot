@@ -3,6 +3,7 @@
 #include <std_msgs/Int32.h>
 #include <std_msgs/Int32MultiArray.h>
 #include <std_msgs/Float64.h>
+#include <std_msgs/String.h>
 #include <std_msgs/Float64MultiArray.h>
 #include <geometry_msgs/Vector3Stamped.h>
 #include <sensor_msgs/NavSatFix.h>
@@ -15,7 +16,7 @@ public:
 
 	void init(int argc, char* argv[]);
 
-	void FindWaypoint(const std_msgs::Int32ConstPtr &msg);
+	void FindWaypoint(const std_msgs::Float64MultiArray::ConstPtr &msg);
 
 	void IMUCallback(const geometry_msgs::Vector3Stamped::ConstPtr &msg);
 	void GPSCallback(const sensor_msgs::NavSatFix &msg);
@@ -27,10 +28,11 @@ public:
 	ros::Subscriber subGPS;
 	ros::Subscriber subIMU;
 	ros::Subscriber subInput;
+	ros::Subscriber subWPfinder;
 
 	bool hasInput;
 	int pubInterval;
-	int counter
+	int counter;
 	
 	//current state
 	float currentLat;
@@ -46,6 +48,10 @@ public:
 	float setpointy;
 	float dremainx;
 	float dremainy;
+
+	std_msgs::String direction;
+
+	int maxturnrad;
 
 	ros::Publisher pub;
 

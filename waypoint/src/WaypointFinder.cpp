@@ -1,56 +1,63 @@
 #include "WaypointFinder.h"
-#include <cmath.h>
+#include <cmath>
 
 
-void WaypointFinder::FindWaypoint(const std_msgs::Int32ConstPtr &msg){
+void WaypointFinder::FindWaypoint(const std_msgs::Float64MultiArray::ConstPtr &msg){
 	//Untested code
 	//Need to test with GPS
 
-	waypointx = msg->data[0];
-	waypointy = msg->data[1];
+	setpointx = msg->data[0];
+	setpointy = msg->data[1];
 
-	if(counter == 1){
+	if(counter >= 0){
 		//Generating test waypoints
 		//Change to reasonable values.
-		setpointx = waypointx + 10;
-		setpointy = waypointy + 10;
+		waypointx = setpointx + 10;
+		waypointy = setpointy + 10;
 		counter++;
 	}
 
-	if(setpointx != None){
+	if(setpointx != NULL){
 		//Find remaining distance to waypoint
-		dremainx = waypointx - setpointx;
-		dremainy = waypointy - setpointy;
+		dremainx = setpointx - waypointx;
+		dremainy = setpointy - waypointy;
 
 		if(std::atan(std::abs(dremainy/dremainx)) <= std::tan(0.523598776)){ //atan(|y/x|) <= tan(30 deg)
 			//If the heading angle is less than 30 deg, hard turn left/right
 			if(dremainx == std::abs(dremainx)){ //remaining x is positive, must turn right
 				std::cout << "Hard right" << std::endl;
+				direction = "Hard right";
 			}
 			else{ //remaining x is negative, must turn left
 				std::cout << "Hard left" << std::endl;
+				direction = "Hard left";
 			}
 		}
 		else if(std::atan(std::abs(dremainy/dremainx)) <= std::tan(1.04719755)){ //atan(|y/x|) <= tan(60 deg) and atan(|y/x|) >= tan(30 deg)
 			//If the heading angle is less than 60 deg but greater than 30 deg, normal turn left/right.
 			if(dremainx == std::abs(dremainx)){ //remaining x is positive, must turn right
 				std::cout << "Mid right" << std::endl;
+				direction = "Mid right";
 			}
 			else{ //remaining x is negative, must turn left
 				std::cout << "Mid left" << std::endl;
+				direction = "Mid left";
 			}
 		}
 		else if(std::atan(std::abs(dremainy/dremainx)) <= std::tan(1.48352986)){ //atan(|y/x|) <= tan(85 deg) and atan(|y/x|) >= tan(60 deg)
 			//If the heading angle is less than 85 deg but greater than 60 deg, slight turn left/right.
 			if(dremainx == std::abs(dremainx)){ //remaining x is positive, must turn right
 				std::cout << "Slight right" << std::endl;
+				direction = "Slight right";
 			}
 			else{ //remaining x is negative, must turn left
 				std::cout << "Slight left" << std::endl;
+				direction = "Slight left";
 			}
 		}
 		else{ //If the waypoint is within a cone +-10 degrees from straight, the rover will drive straight ahead.
 			std::cout << "Straight ahead" << std::endl;
+			direction = "Straight ahead";
 		}
 
 	}
@@ -58,7 +65,6 @@ void WaypointFinder::FindWaypoint(const std_msgs::Int32ConstPtr &msg){
 }
 
 void WaypointFinder::InputCallback(const std_msgs::Float64MultiArray::ConstPtr &msg){
-	std::cout << "Yo bitch I'm here!!" << std::endl;
 	if(hasInput == false){
 	 	hasInput = true;
 	}
@@ -90,23 +96,25 @@ void WaypointFinder::init(int argc, char* argv[]){
 	subGPS = nh.subscribe("/fix", 10, &WaypointFinder::GPSCallback, this);
 	subIMU = nh.subscribe("/imu/mag", 10, &WaypointFinder::IMUCallback, this);
 
-	pub = nh.advertise<std_msgs::Float64MultiArray>("velocity", 1000);
+	subWPfinder = nh.subscribe("/goto", 10, &WaypointFinder::FindWaypoint, this);
+
+	pub = nh.advertise<std_msgs::String>("velocity", 1000);
 
 	ros::Rate loop_rate(10);
 
 	int count = 0;
 	while (ros::ok())
   	{
-	    std_msgs::Float64MultiArray now;
+	    //std_msgs::Float64MultiArray now;
 
-	    now.data.push_back(currentLat);
+	    /*now.data.push_back(currentLat);
 	    now.data.push_back(currentLong);
 	    now.data.push_back(headingx);
 	    now.data.push_back(headingy);
 	    now.data.push_back(headingz);
 	    now.data.push_back(waypointx);
 	    now.data.push_back(waypointy);
-	    
+	    now.data.push_back(direction);*/
 
 	    /*now[1] = currentLong;
 	    now[2] = headingx;
@@ -115,7 +123,7 @@ void WaypointFinder::init(int argc, char* argv[]){
 	    now[5] = waypointx;
 	    now[6] = waypointy;*/
 
-	    pub.publish(now);
+	    pub.publish(direction);
 
 	    ros::spinOnce();
 
