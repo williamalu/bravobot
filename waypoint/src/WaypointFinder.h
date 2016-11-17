@@ -30,6 +30,7 @@ public:
 
 	bool hasInput;
 	int pubInterval;
+	int counter
 	
 	//current state
 	float currentLat;
@@ -41,6 +42,10 @@ public:
 
 	float waypointx;
 	float waypointy;
+	float setpointx;
+	float setpointy;
+	float dremainx;
+	float dremainy;
 
 	ros::Publisher pub;
 
