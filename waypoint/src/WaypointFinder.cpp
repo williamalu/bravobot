@@ -25,39 +25,39 @@ void WaypointFinder::FindWaypoint(const std_msgs::Float64MultiArray::ConstPtr &m
 		if(std::atan(std::abs(dremainy/dremainx)) <= std::tan(0.523598776)){ //atan(|y/x|) <= tan(30 deg)
 			//If the heading angle is less than 30 deg, hard turn left/right
 			if(dremainx == std::abs(dremainx)){ //remaining x is positive, must turn right
-				std::cout << "Hard right" << std::endl;
-				direction = "Hard right";
+				direction << "Hard right";
+				std::cout << direction << std::endl;
 			}
 			else{ //remaining x is negative, must turn left
-				std::cout << "Hard left" << std::endl;
-				direction = "Hard left";
+				direction << "Hard left";
+				std::cout << direction << std::endl;
 			}
 		}
 		else if(std::atan(std::abs(dremainy/dremainx)) <= std::tan(1.04719755)){ //atan(|y/x|) <= tan(60 deg) and atan(|y/x|) >= tan(30 deg)
 			//If the heading angle is less than 60 deg but greater than 30 deg, normal turn left/right.
 			if(dremainx == std::abs(dremainx)){ //remaining x is positive, must turn right
-				std::cout << "Mid right" << std::endl;
-				direction = "Mid right";
+				direction << "Mid right";
+				std::cout << direction << std::endl;
 			}
 			else{ //remaining x is negative, must turn left
-				std::cout << "Mid left" << std::endl;
-				direction = "Mid left";
+				direction << "Mid left";
+				std::cout << direction << std::endl;
 			}
 		}
 		else if(std::atan(std::abs(dremainy/dremainx)) <= std::tan(1.48352986)){ //atan(|y/x|) <= tan(85 deg) and atan(|y/x|) >= tan(60 deg)
 			//If the heading angle is less than 85 deg but greater than 60 deg, slight turn left/right.
 			if(dremainx == std::abs(dremainx)){ //remaining x is positive, must turn right
-				std::cout << "Slight right" << std::endl;
-				direction = "Slight right";
+				direction << "Slight right";
+ 				std::cout << direction << std::endl;
 			}
 			else{ //remaining x is negative, must turn left
-				std::cout << "Slight left" << std::endl;
-				direction = "Slight left";
+				direction << "Slight left";
+				std::cout << direction << std::endl;
 			}
 		}
 		else{ //If the waypoint is within a cone +-10 degrees from straight, the rover will drive straight ahead.
-			std::cout << "Straight ahead" << std::endl;
-			direction = "Straight ahead";
+			direction << "Straight ahead";
+			std::cout << direction << std::endl;
 		}
 
 	}
@@ -123,13 +123,16 @@ void WaypointFinder::init(int argc, char* argv[]){
 	    now[5] = waypointx;
 	    now[6] = waypointy;*/
 
-	    pub.publish(direction);
+  		pubdirection.data = direction.str();
+	    pub.publish(pubdirection);
 
 	    ros::spinOnce();
 
 	    loop_rate.sleep();
 
 	    ++count;
+	    std::cout << count << "   " << direction.str() << "Hoi" << std::endl;
+	    // std::cout << count << "   " << pubdirection.data.c_str() << "Hoi" << std::endl;
 	}
 
 }

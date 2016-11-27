@@ -3,8 +3,8 @@
 #include <std_msgs/Int32.h>
 #include <std_msgs/Int32MultiArray.h>
 #include <std_msgs/Float64.h>
-#include <std_msgs/String.h>
 #include <std_msgs/Float64MultiArray.h>
+#include <std_msgs/String.h>
 #include <geometry_msgs/Vector3Stamped.h>
 #include <sensor_msgs/NavSatFix.h>
 #include <vector>
@@ -49,7 +49,10 @@ public:
 	float dremainx;
 	float dremainy;
 
-	std_msgs::String direction;
+	std_msgs::String pubdirection;
+	std::stringstream direction;
+	// std::stringstream s;
+
 
 	int maxturnrad;
 
