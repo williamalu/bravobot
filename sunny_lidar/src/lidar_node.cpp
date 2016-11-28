@@ -11,45 +11,48 @@
 #include <string>
 #include <stdlib.h>
 #include <stdio.h>
-
-template<typename T>
-std::ostream& operator<<(std::ostream& os, const std::vector<T>& v){
-    for(int i=0; i<v.size(); ++i){
-        os << v[i] << ", ";
-    }
-    return os << std::endl;
-}
+#include <math.h>
 
 ros::Publisher vel_pub;
-const int DEFAULT_SIZE = 22;
+const int DEFAULT_SIZE = 11;
 const double ANGLE_INCREMENT = 0.00613592332229;
 const double TIME_INCREMENT = 9.76562514552e-05;
 
 void laserData(const sensor_msgs::LaserScan msg){
     std::cout << msg.ranges.size()<< "\n";
+    std_msgs::Int16MultiArray msgp;
+    std::vector<short int> v(DEFAULT_SIZE*2,0); //index 0-11 is for linear velocity and index 12-21 are for turning. Initial values are all zeros
+
     float min = 6.0;
+    double angle = 0;
+    short int MAX_turning = 4;
+    bool marked = false;
+
     for (int i = 0;i<msg.ranges.size();i++){
-        if (msg.ranges[i]<min){
-            min = msg.ranges[i];
+        if (i%(int)(512.0/DEFAULT_SIZE) == 0){
+            marked = false;
+        }
+        if (msg.ranges[i]<2.0 && !marked) {
+            v[i / (512.0 / DEFAULT_SIZE) + DEFAULT_SIZE] = -MAX_turning; //Put negative values in the turning array at the obstacle directions
+            marked = true;
         }
     }
+    //ranges[0] correspond to 0 degrees (to the right), and ranges[512] corresponds to
+    //180 degrees (to the left)
 
-    //ranges[0] correspond to 90 degrees (to the right), and ranges[512] corresponds to
-    //-90 degrees (to the left)
+    //Check the angle of the obstacle and turn to avoid it
+    if (v[11+5]<0 || v[11+4]< 0 || v[11+3]< 0 || v[11+6]<0 || v[11+7]<0){ //if the angle of the obstacle is roughly between 45 and 135 degrees
+        v[0] = 1;
+        v[1] = 1;
+        v[2] = 2; // Support decelleration
+        v[3] = 1;
+        v[4] = 1;
+        v[5] = 0;
+        v[6], v[7] = -1; // No acceleration!
+        v[8], v[9] = -2;
+        v[10] = -3;
+    }
 
-    std_msgs::Int16MultiArray msgp;
-    std::vector<short int> v(DEFAULT_SIZE,0);
-    if (min<0.2){
-        v[2] = 1;
-    }
-    else if (min<1.0){
-        v[5] = 1;
-    }
-    else if (min<2.0){
-        v[7] = 1;
-    }else if (min>=2.0){
-        v[9] = 1;
-    }
     msgp.data = v;
     vel_pub.publish(msgp);
 }
