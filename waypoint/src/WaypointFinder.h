@@ -17,6 +17,7 @@ public:
 	void init(int argc, char* argv[]);
 
 	void FindWaypoint(const std_msgs::Float64MultiArray::ConstPtr &msg);
+	void WaypointList();
 
 	void IMUCallback(const geometry_msgs::Vector3Stamped::ConstPtr &msg);
 	void GPSCallback(const sensor_msgs::NavSatFix &msg);
@@ -31,8 +32,12 @@ public:
 	ros::Subscriber subWPfinder;
 
 	bool hasInput;
+	bool waypointFound;
 	int pubInterval;
+	int currwp;
+	int count;
 	int counter;
+	int i;
 	
 	//current state
 	float currentLat;
@@ -49,6 +54,9 @@ public:
 	float dremainx;
 	float dremainy;
 
+	int arbArray [7];
+	int waypoints [7];
+
 	std_msgs::String pubdirection;
 	std::stringstream direction;
 	// std::stringstream s;
@@ -56,7 +64,9 @@ public:
 
 	int maxturnrad;
 
-	ros::Publisher pub;
+	ros::Publisher pubvel;
+	ros::Publisher pubwp;
+	// ros::Publisher goto;
 
 };
 
