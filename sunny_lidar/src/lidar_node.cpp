@@ -20,6 +20,7 @@ const double TIME_INCREMENT = 9.76562514552e-05;
 
 void laserData(const sensor_msgs::LaserScan msg){
     std::cout << msg.ranges.size()<< "\n";
+
     std_msgs::Int16MultiArray msgp;
     std::vector<short int> v(DEFAULT_SIZE*2,0); //index 0-11 is for linear velocity and index 12-21 are for turning. Initial values are all zeros
 
@@ -41,7 +42,7 @@ void laserData(const sensor_msgs::LaserScan msg){
     //180 degrees (to the left)
 
     //Check the angle of the obstacle and turn to avoid it
-    if (v[11+5]<0 || v[11+4]< 0 || v[11+3]< 0 || v[11+6]<0 || v[11+7]<0){ //if the angle of the obstacle is roughly between 45 and 135 degrees
+    if (v[11+5]<0 || v[11+4]< 0 || v[11+3]< 0 || v[11+6]<0 || v[11+7]<0) { //if the angle of the obstacle is roughly between 45 and 135 degrees
         v[0] = 1;
         v[1] = 1;
         v[2] = 2; // Support decelleration
@@ -52,7 +53,7 @@ void laserData(const sensor_msgs::LaserScan msg){
         v[8], v[9] = -2;
         v[10] = -3;
     }
-
+    
     msgp.data = v;
     vel_pub.publish(msgp);
 }
