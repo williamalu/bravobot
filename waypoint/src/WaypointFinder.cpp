@@ -105,15 +105,16 @@ void WaypointFinder::WaypointList(){
 	//COMPLETELY UNTESTED, FIRST DRAFT IN PROGRESS
 	int waypoints [5] = { (0,0),(0,0),(0,0),(0,0),(0,0) }; // The current queue of waypoints
 
-	if (waypointFound == true){
-		waypoints[currwp] = (0,0);
+	if (waypointFound == true){ //If a waypoint was found...
+		waypoints[currwp] = (0,0); //Set the current waypoint to default value, clearing it off the list.
+		counter = 1; //Reset previous heading weights in arbiter array (arbArray) to 0
 		waypointFound = false;
 	}
 	else{
 		for ( i=0; i <= 4; i++ ) {
 			// For waypoint i in list waypoints, check if waypoint exists (default value is (0,0))
 			// Once a valid waypoint is found, set currwp (currentwaypoint) to waypoint i.
-			if (waypoints[i] != (0,0)){
+			if (waypoints[i] != (0,0)){ //If waypoint i in waypoints exists, make it our current waypoint.
 				currwp = i;
 			}
 		}
@@ -124,7 +125,7 @@ void WaypointFinder::init(int argc, char* argv[]){
 	//Initialize input flag
 	hasInput = false;
 	waypointFound = false;
-	maxturnrad = 3; 
+	maxturnrad = 3;  // meters
 	counter = 1;
 	waypointx = 0;
 	waypointy = 0;
