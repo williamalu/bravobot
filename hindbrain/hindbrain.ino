@@ -8,15 +8,24 @@
 
 // LEDs and Indicator Lights
 int ledPin               = 13; // Robot alive indicator light
-int neoPixel1            = 10;
-int neoPixel2            = 11;
-Adafruit_NeoPixel strip1 = Adafruit_NeoPixel(8, neoPixel1, NEO_GRB + NEO_KHZ800);
+#define neoPixel1 41
+#define neoPixel2 40
+#define neoPixel3 39
+#define neoPixel4 38
+Adafruit_NeoPixel strip1 = Adafruit_NeoPixel(8,  neoPixel1, NEO_GRBW + NEO_KHZ800);
+Adafruit_NeoPixel strip2 = Adafruit_NeoPixel(8,  neoPixel2, NEO_GRBW + NEO_KHZ800);
+Adafruit_NeoPixel ring1  = Adafruit_NeoPixel(12, neoPixel3, NEO_GRBW + NEO_KHZ800);
+Adafruit_NeoPixel ring2  = Adafruit_NeoPixel(12, neoPixel4, NEO_GRBW + NEO_KHZ800);
+
+uint32_t red   = strip1.Color(10, 0, 0, 0);
+uint32_t green = strip1.Color(0, 10, 0, 0);
+uint32_t white = strip1.Color(0, 0, 0, 10);
 
 // Binary Output Port
 int actOutPin = 4;  // create binary output port on pin 4
 
 // E-Stop
-int eStopPin = 5;
+int eStopPin = A4;
 
 // Sharp IR Distance Sensors
 int sharpDistance1 = 0; //create name for sharp ir 1 analog input pin 0
@@ -31,7 +40,8 @@ Servo panServo;    // create pan servo object
 Servo tiltServo;   // create tilt servo object
 
 // Drive Motors
-
+Servo rightMotors;
+Servo leftMotors;
 
 // Midbrain Commands and Hindbrain Status
 char command      = 'g'; // 'g' is go command from midbrain, 's' is stop
@@ -55,9 +65,20 @@ void setup() {
   tiltServo.writeMicroseconds(1500); // set initial servo position to 90 deg
   panServo.attach(9);                // attach the pan servo to pin 9
   tiltServo.attach(8);               // attach the tilt servo to pin 8
+
+  rightMotors.attach(10);
+  leftMotors.attach(11);
+  rightMotors.write(90);
+  leftMotors.write(90);
   
   strip1.begin();
-  strip1.show(); //Inialize all pixels to 'off'
+  strip2.begin();
+  ring1.begin();
+  ring2.begin();
+  strip1.show(); //Initialize all pixels to 'off'
+  strip2.show();
+  ring1.show();
+  ring2.show();
 }
 
 
@@ -72,10 +93,12 @@ void loop() {
   }
 
   Serial.print("Last Midbrain command sent: ");
-  Serial.println(command);
+  Serial.print(command);
+  Serial.print("  Hindbrain Status: ");
+  Serial.println(hBrainStatus);
 
   if (readString.length() > 0) {
-    Serial.println(readString);
+//    Serial.println(readString);
     if (hBrainStatus != 'e') {    // during e-stop, ignore command to move pan or tilt servos
       pan = readString.toInt();   // convert readString into a pan angle
       tilt = pan;                 // use same angle for tilt
@@ -96,10 +119,10 @@ void loop() {
   float SharpRange3 = sharpRange(sharpDistance3); // Read Sharp3
   float SharpRange4 = sharpRange(sharpDistance4); // Read Sharp4
 
-
   // Think: Run Low-Level Cognition and Safety Code
   if (command == 's') {
     blink();  // blink robot alive indicator
+    hBrainStatus = 's';
   } else {
     delay (delayPeriod);  // delay so midbrain can see serial text
     delay (delayPeriod);
@@ -107,56 +130,71 @@ void loop() {
 
   //If obstacle too close, e-stop
   if (SharpRange1 < 50.0 || SharpRange2 < 50.0 || SharpRange3 < 50.0 || SharpRange4 < 50.0) {
+    Serial.println("Something is close to the robot!");
     hBrainStatus = 'e';
   }
 
   // Act: Run Actuators and Behavior Lights
   toggleActPin4(command); // toggle high/low Act pin 4 with commands from midbrain
 
+  if (hBrainStatus == 'r') {
+    for (int i = 0; i <= 11; i++) {
+      ring1.setPixelColor(i, white);
+      ring2.setPixelColor(i, white);
+    }
+    for (int i = 0; i <= 7; i++) {
+      strip1.setPixelColor(i, green);
+      strip2.setPixelColor(i, green);
+    }
+    ring1.show();
+    ring2.show();
+    strip1.show();
+    strip2.show();
+
+    rightMotors.write(80);
+    leftMotors.write(80);
+  }
+
   if (hBrainStatus == 'e') {  // if hindbrain is in e-stop mode, all motors stop
     // this requires leaving pan and tilt where they are and setting Roboclaw
     // to a zero speed on both channels
+    for (int i = 0; i <= 7; i++) {
+      strip1.setPixelColor(i, red);
+      strip2.setPixelColor(i, red);
+    }
+    for (int i = 0; i <= 11; i++) {
+      ring1.setPixelColor(i, red);
+      ring2.setPixelColor(i, red);
+    }
+    strip1.show();
+    strip2.show();
+    ring1.show();
+    ring2.show();
+
+    rightMotors.write(90);
+    leftMotors.write(90);
   } else {                                // hindbrain not estopped
-    Serial.println("Hindbrain running.");
-    Serial.print("Commanding pan/tilt angle: ");
-    Serial.println(pan);
+//    Serial.println("  Hindbrain running.");
+//    Serial.print("Commanding pan/tilt angle: ");
+//    Serial.println(pan);
     panServo.write(pan);
     tiltServo.write(pan);
   }
 
-
-  // Write Status Data to Midbrain
-  if (command == 's') {
-    Serial.println("Hindbrain stopped.");
+  if (hBrainStatus == 's') {
+    rightMotors.write(90);
+    leftMotors.write(90);
   }
 
 
+  // Write Status Data to Midbrain
+  if (hBrainStatus == 's') {
+    Serial.println("Hindbrain stopped.");
+  }
 
-// ===============================================================  
-
-//  //Act: Run actuators and behavior lights
-//  toggleActPin4(command);
-//  if (hBrainStatus == 'e') {
-//
-//  } else {
-//    Serial.print("Hindbrain running.");
-//    Serial.print("Commanding pan/tilt angle: ");
-//    panServo.write(pan);
-//    tiltServo.write(tilt);
-//
-//    strip1.setPixelColor(1, 100, 0, 0);
-//    strip1.setPixelColor(2, 100, 0, 0);
-//    strip1.setPixelColor(3, 100, 0, 0);
-//    strip1.show();
-//    //      delay(delayPeriod);
-//    //      strip1.setPixelColor(0,0,0,0);
-//    //      strip1.show();
-//  }
-//
-//  //Write: status data up to MidBrain
-//  if (hBrainStatus == 'e') {
-//    Serial.println(" hind brain E-stopped");
-//  }
+  if (hBrainStatus == 'e') {
+    Serial.println("Hindbrain E-stopped.");
+  }
 }
 
 // Blinks robot alive indicator light
