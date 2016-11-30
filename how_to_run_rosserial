@@ -1,0 +1,8 @@
+
+How to set up a ros serial server (to communicate with the Arduino hindbrain)
+
+1. Follow the tutorial at http://wiki.ros.org/rosserial_arduino/Tutorials/Arduino%20IDE%20Setup
+
+2. Run rosserial specifying the correct Serial port.
+
+rosrun rosserial_python serial_node.py _port:=/dev/ttyACM* _baud:=57600
