@@ -9,19 +9,23 @@ void WaypointFinder::FindWaypoint(const std_msgs::Float64MultiArray::ConstPtr &m
 
 	if(setpointx != NULL){
 
-		if(counter <= 1){
-			// //Generating test waypoints
-			// //Change to reasonable values.
-			// waypointx = setpointx + 10;
-			// waypointy = setpointy + 10;
+		// if(counter <= 1){
+		// 	// //Generating test waypoints
+		// 	// //Change to reasonable values.
+		// 	// waypointx = setpointx + 10;
+		// 	// waypointy = setpointy + 10;
 
-			for ( i=0; i <= 6; i++ ) {
-				arbArray [i] = 0;
-			}
+		// 	for ( i=0; i <= 6; i++ ) {
+		// 		//If waypoint has been reached, reset waypoint arbiter array to zero in preparation for finding the next waypoint.
+		// 		arbArray [i] = 0;
+		// 	}
+		// }
+
+			// counter++;
+
+		for ( i=0; i < 7; i++ ) {
+			arbArray [i] = 0;
 		}
-
-			counter++;
-	
 
 		//Find remaining distance to waypoint
 		dremainx = setpointx - waypointx;
@@ -31,50 +35,53 @@ void WaypointFinder::FindWaypoint(const std_msgs::Float64MultiArray::ConstPtr &m
 			//If the heading angle to the next waypoint is less than 30 deg, hard turn left/right
 			if(dremainx == std::abs(dremainx)){ //remaining x is positive, must turn right
 				direction << "Hard right";
-				arbArray[7] = 1;
-				arbArray[6] = 0.5;
+
+				arbArray[6] = 1;
+				arbArray[5] = 0.5;
 			}
 			else{ //remaining x is negative, must turn left
 				direction << "Hard left";
-				arbArray[1] = 1;
-				arbArray[2] = 0.5;
+
+				arbArray[0] = 1;
+				arbArray[1] = 0.5;
 			}
 		}
 		else if(std::atan(std::abs(dremainy/dremainx)) <= std::tan(1.04719755)){ //atan(|y/x|) <= tan(60 deg) and atan(|y/x|) >= tan(30 deg)
 			//If the heading angle is less than 60 deg but greater than 30 deg, normal turn left/right.
 			if(dremainx == std::abs(dremainx)){ //remaining x is positive, must turn right
 				direction << "Mid right";
-				arbArray[5] = 0.5;
-				arbArray[6] = 1;
-				arbArray[7] = 0.5;
+
+				arbArray[4] = 0.5;
+				arbArray[5] = 1;
+				arbArray[6] = 0.5;
 			}
 			else{ //remaining x is negative, must turn left
 				direction << "Mid left";
-				arbArray[1] = 0.5;
-				arbArray[2] = 1;
-				arbArray[3] = 0.5;
+				arbArray[0] = 0.5;
+				arbArray[1] = 1;
+				arbArray[2] = 0.5;
 			}
 		}
 		else if(std::atan(std::abs(dremainy/dremainx)) <= std::tan(1.48352986)){ //atan(|y/x|) <= tan(85 deg) and atan(|y/x|) >= tan(60 deg)
 			//If the heading angle is less than 85 deg but greater than 60 deg, slight turn left/right.
 			if(dremainx == std::abs(dremainx)){ //remaining x is positive, must turn right
 				direction << "Slight right";
-				arbArray[4] = 0.5;
-				arbArray[5] = 1;
-				arbArray[6] = 0.5;
+				arbArray[3] = 0.5;
+				arbArray[4] = 1;
+				arbArray[5] = 0.5;
 			}
 			else{ //remaining x is negative, must turn left
 				direction << "Slight left";
-				arbArray[2] = 0.5;
-				arbArray[3] = 1;
-				arbArray[4] = 0.5;
+				arbArray[1] = 0.5;
+				arbArray[2] = 1;
+				arbArray[3] = 0.5;
 			}
 		}
 		else{ //If the waypoint is within a cone +-10 degrees from straight, the rover will drive straight ahead.
 			direction << "Straight ahead";
-			arbArray[3] = 0.5;
-			arbArray[4] = 1;
-			arbArray[5] = 0.5;
+			arbArray[2] = 0.5;
+			arbArray[3] = 1;
+			arbArray[4] = 0.5;
 		}
 		std::cout << direction << std::endl;
 	}
