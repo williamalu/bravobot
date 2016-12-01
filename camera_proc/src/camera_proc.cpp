@@ -10,6 +10,9 @@ int count = 0;
 
 class ImageConverter
 {
+public:
+  int callback_count;
+  private:
   ros::NodeHandle nh_;
   image_transport::ImageTransport it_;
   image_transport::Subscriber image_sub_;
@@ -20,11 +23,12 @@ public:
     : it_(nh_)
   {
     // Subscrive to input video feed and publish output video feed
-    image_sub_ = it_.subscribe("/uvc_camera/image_raw", 1, 
+    image_sub_ = it_.subscribe("/image_raw", 1, 
       &ImageConverter::imageCb, this);
     image_pub_ = it_.advertise("/image_converter/output_video", 1);
 
-    cv::namedWindow(OPENCV_WINDOW);
+    cv::namedWindow(OPENCV_WINDOW, CV_WINDOW_AUTOSIZE);
+    callback_count = 0;
   }
 
   ~ImageConverter()
@@ -34,6 +38,8 @@ public:
 
   void imageCb(const sensor_msgs::ImageConstPtr& msg)
   {
+    ++callback_count;
+
     cv_bridge::CvImagePtr cv_ptr;
     try
     {
@@ -45,12 +51,11 @@ public:
       return;
     }
 
-    // Draw an example circle on the video stream
-    if (cv_ptr->image.rows > 60 && cv_ptr->image.cols > 60)
-      cv::circle(cv_ptr->image, cv::Point(50, 50), 10, CV_RGB(255,0,0));
 
     // Update GUI Window
     cv::imshow(OPENCV_WINDOW, cv_ptr->image);
+    // ROS_INFO("ROWS : %d, COLS : %d", cv_ptr->image.rows, cv_ptr->image.cols);
+
     cv::waitKey(3);
     
     // Output modified video stream
@@ -62,9 +67,10 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "image_converter");
   ImageConverter ic;
-  std::cout << count;
-  count ++;
+  std::cout << count <<std::endl;
 
-  ros::spin();
+  while(ros::ok()){
+    ros::spinOnce();
+  }
   return 0;
 }
