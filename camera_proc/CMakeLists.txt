@@ -105,12 +105,12 @@ find_package(catkin REQUIRED COMPONENTS
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-#catkin_package(
+catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES camera_proc
-#  CATKIN_DEPENDS sensor_msgs
-#  DEPENDS system_lib
-#)
+  LIBRARIES camera_proc
+  CATKIN_DEPENDS sensor_msgs
+  DEPENDS system_lib
+)
 
 ###########
 ## Build ##
@@ -135,6 +135,7 @@ include_directories(
 
 ## Declare a C++ executable
 add_executable(camera_proc src/camera_proc.cpp)
+#add_executable(camera_pub src/camera_pub.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
