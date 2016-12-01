@@ -6,12 +6,10 @@
 #include <opencv2/highgui/highgui.hpp>
 
 static const std::string OPENCV_WINDOW = "Image window";
-int count = 0;
 
 class ImageConverter
 {
 public:
-  int callback_count;
   private:
   ros::NodeHandle nh_;
   image_transport::ImageTransport it_;
@@ -28,7 +26,6 @@ public:
     image_pub_ = it_.advertise("/image_converter/output_video", 1);
 
     cv::namedWindow(OPENCV_WINDOW, CV_WINDOW_AUTOSIZE);
-    callback_count = 0;
   }
 
   ~ImageConverter()
@@ -38,7 +35,6 @@ public:
 
   void imageCb(const sensor_msgs::ImageConstPtr& msg)
   {
-    ++callback_count;
 
     cv_bridge::CvImagePtr cv_ptr;
     try
@@ -61,13 +57,17 @@ public:
     // Output modified video stream
     image_pub_.publish(cv_ptr->toImageMsg());
   }
+
+  void colorTrack()
+  {
+
+  }
 };
 
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "image_converter");
   ImageConverter ic;
-  std::cout << count <<std::endl;
 
   while(ros::ok()){
     ros::spinOnce();
