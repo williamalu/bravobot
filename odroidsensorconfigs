@@ -10,7 +10,7 @@ rostopic echo /imu/data_raw
 
 
 GPS:
-rosrun nmea_navsat_driver nmea_serial_driver _port:=/dev/ttyACM0 _baud:=115200 #Default baud rate is 115200
+rosrun nmea_navsat_driver nmea_serial_driver _port:=/dev/ttyACM2 _baud:=115200 #Default baud rate is 115200
 
 To check if it's running:
 File is gps_print.py located in documents folder
