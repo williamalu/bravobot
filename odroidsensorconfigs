@@ -19,6 +19,10 @@ Run: python gps_print.py
 
 
 Camera:
+export ROS_NAMESPACE=my_camera
+ROS_MASTER_URI=http://10.42.0.77:1311/
+export ROS IP=10.42.0.77
+rosrun uvc_camera uvc_camera_node _device:="/dev/video0" _width:=640 _height:=480 _camera_info_url:="file:///opt/ros/indigo/share/uvc_camera/camera_calibration.yaml"
 
 LIDAR:
 Run ls /dev/ttyACM* to find serial port
