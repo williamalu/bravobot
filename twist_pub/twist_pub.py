@@ -13,15 +13,12 @@ class Twist_Pub(object):
 	def __init__(self):
 		rospy.init_node('twist_pub')
 		self.cmd_vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
-
-	def run(self):
-		vel_sum_array = np.zeros(ARRAY_SIZE)
-		turn_sum_array = np.zeros(ARRAY_SIZE)
-		#vel_sum_array = np.array([1., 2, 3, 4, 5, 6, 5, 5 ,5, 2])
-		#turn_sum_array = np.array([0., 0, 10, 1, 2, 3, 3, 2, 1, 1])
 		
-		vel = random.randint(0,11)
-		turn = random.randint(0,11)
+	def run(self,i):
+		vels = [5, 2, 9, 7, 7]
+		dirs = [5, 9, 5, 3, 8]
+		vel = vels[i]
+		turn = dirs[i]
 		msg = Twist()
 		msg.linear.x = 2*vel/(ARRAY_SIZE-1)-1
 		msg.angular.z = 2*turn/(ARRAY_SIZE-1)-1
@@ -29,7 +26,9 @@ class Twist_Pub(object):
 
 if __name__ == '__main__':
 	main = Twist_Pub()
-	r = rospy.Rate(50)
+	r = rospy.Rate(5000)
+	i = 0; #5 modes: stop, go backwards, go straight forwards, turn left, turn right
 	while not rospy.is_shutdown():
-		main.run()
+		i = (i+1)%5
+		main.run(i)
 		r.sleep()
