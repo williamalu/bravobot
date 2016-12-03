@@ -60,7 +60,6 @@ public:
 
   void colorTrack()
   {
-
   }
 };
 
