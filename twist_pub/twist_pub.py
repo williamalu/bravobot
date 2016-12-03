@@ -27,7 +27,7 @@ class Twist_Pub(object):
 if __name__ == '__main__':
 	main = Twist_Pub()
 	r = rospy.Rate(5000)
-	i = 0; #5 modes: stop, go backwards, go straight forwards, turn left, turn right
+	i = 0 #5 modes: stop, go backwards, go straight forwards, turn left, turn right
 	while not rospy.is_shutdown():
 		i = (i+1)%5
 		main.run(i)
