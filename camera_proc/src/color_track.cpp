@@ -151,7 +151,7 @@ int main(int argc, char **argv)
     * When the Subscriber object is destructed, it will automatically unsubscribe from the "camera/image_raw" base topic.
     */
     //image_transport::Subscriber sub = it.subscribe("camera/image_raw", 1, imageCallback);
-    image_transport::Subscriber sub = it.subscribe("camera/image_raw", 1, colorDetectionCallback);
+    image_transport::Subscriber sub = it.subscribe("/image_raw", 1, colorDetectionCallback);
     //OpenCV HighGUI call to destroy a display window on shut-down.
     cv::destroyWindow(WINDOW);
     /**

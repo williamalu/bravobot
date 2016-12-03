@@ -136,7 +136,7 @@ include_directories(
 ## Declare a C++ executable
 add_executable(camera_proc src/camera_proc.cpp)
 #add_executable(camera_pub src/camera_pub.cpp)
-add_executable(camera_track src/color_track.cpp)
+add_executable(color_track src/color_track.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -146,6 +146,10 @@ add_executable(camera_track src/color_track.cpp)
 target_link_libraries(camera_proc
    ${catkin_LIBRARIES}
 )
+
+target_link_libraries(color_track
+        ${catkin_LIBRARIES}
+        )
 
 #############
 ## Install ##
