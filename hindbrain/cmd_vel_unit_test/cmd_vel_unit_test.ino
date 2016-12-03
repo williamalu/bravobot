@@ -11,12 +11,12 @@ ros::NodeHandle  nh;
 Servo port_motors;
 Servo starboard_motors;
 
-int port_speed = 0; // range from -1 to 1 
-int starboard_speed = 0; // range from -1 to 1 
+float port_speed = 0; // range from -1 to 1 
+float starboard_speed = 0; // range from -1 to 1 
 
 void cmdvel_cb( const geometry_msgs::Twist& msg){
-  int linearSpeed = msg.linear.x;
-  int angularDir = msg.angular.z;
+  float linearSpeed = msg.linear.x;
+  float angularDir = msg.angular.z;
 
   //If angular direction = 0, then we send linear speed * r to both motors.
   //If angular dirction = -1 then we send linear speed * r to the right motors, and 85 to the left.
@@ -55,11 +55,16 @@ void setup()
   nh.subscribe(cmd);
 }
 
+//mapFloat is a direct copy of the float function from Arduino.
+float mapFloat(float x, float in_min, float in_max, float out_min, float out_max) {
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
 void loop()
 {  
   
-  port_motors.write(port_speed);
-  starboard_motors.write(starboard_speed);
+  port_motors.write(mapFloat(port_speed, -1.0,1.0, 24.0,156.0));
+  starboard_motors.write(mapFloat(starboard_speed, -1.0,1.0, 24.0,156.0));
   nh.spinOnce();
   
 }
