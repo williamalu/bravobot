@@ -1,6 +1,6 @@
 /* 
  * cmd_vel_unit_test
- * Subscrubes to cmd_vel. When cmd_val is published to, converts linear and angular velocities in the Twist message to
+ * Subscribes to cmd_vel. When cmd_vel is published to, converts linear and angular velocities in the Twist message to
  * port and starboard motor speeds, which are controlled by Servo values (0-90-180). Sends motor signals on loop().
  */
 
@@ -55,7 +55,7 @@ void loop()
   
 }
 
-//setMotorSpeed: Converts linar and angular speeds between -1 and 1 to Motor servo values from 24-90-156. These values are assigned to
+//setMotorSpeed: Converts linear and angular speeds between -1 and 1 to Motor servo values from 24-90-156. These values are assigned to
 //global variables that handle motor speed (allowing speed to be changed in the loop()).
 void setMotorSpeed(float linearSpeed, float angularDir) {
   //If angular direction = 0, then we send linear speed * r to both motors.
