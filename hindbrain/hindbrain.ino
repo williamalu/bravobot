@@ -7,7 +7,7 @@
 void setup() {
   Serial.begin(9600);
 
-  pinMode(ledPin, OUTPUT);
+  pinMode(LED_PIN, OUTPUT);
   pinMode(eStopPin, INPUT);
 
   panServo.attach(7);

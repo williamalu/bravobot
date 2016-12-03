@@ -4,20 +4,15 @@
 
 #include <Adafruit_TiCoServo.h>
 #include <Adafruit_NeoPixel.h>
+#include "pins.h"
 
 // Set up Arduino GPIO to support robot
 
 // LEDs and Indicator Lights
-const int ledPin        = 13; // Robot alive indicator light
-const int ledFrontLeft  = 38; // Left  "head light"
-const int ledFrontRight = 39; // Right "head light"
-const int ledBackLeft   = 40; // Left  "brake light"
-const int ledBackRight  = 41; // Right "brake light"
-
-Adafruit_NeoPixel ringFrontLeft  = Adafruit_NeoPixel(12, ledFrontLeft,  NEO_GRBW + NEO_KHZ800);
-Adafruit_NeoPixel ringFrontRight = Adafruit_NeoPixel(12, ledFrontRight, NEO_GRBW + NEO_KHZ800);
-Adafruit_NeoPixel stripBackLeft  = Adafruit_NeoPixel(8,  ledBackLeft,   NEO_GRBW + NEO_KHZ800);
-Adafruit_NeoPixel stripBackRight = Adafruit_NeoPixel(8,  ledBackRight,  NEO_GRBW + NEO_KHZ800);
+Adafruit_NeoPixel ringFrontLeft  = Adafruit_NeoPixel(12, LED_FRONT_LEFT,  NEO_GRBW + NEO_KHZ800);
+Adafruit_NeoPixel ringFrontRight = Adafruit_NeoPixel(12, LED_FRONT_RIGHT, NEO_GRBW + NEO_KHZ800);
+Adafruit_NeoPixel stripBackLeft  = Adafruit_NeoPixel(8,  LED_BACK_LEFT,   NEO_GRBW + NEO_KHZ800);
+Adafruit_NeoPixel stripBackRight = Adafruit_NeoPixel(8,  LED_BACK_RIGHT,  NEO_GRBW + NEO_KHZ800);
 
 uint32_t red   = ringFrontLeft.Color(10, 0, 0, 0);
 uint32_t white = ringFrontLeft.Color(0, 0, 0, 10);
@@ -51,4 +46,5 @@ char state   = 'r'; // Hindbrain state
                     // 's' = software stop
                     // 'e' = e-stop
                     // 'p' = rc passthrough
+char serialReadIn;  // 
 String readString;  // String to store midbrain commands from serial buffer (for testing of FSM switching without rosserial)
