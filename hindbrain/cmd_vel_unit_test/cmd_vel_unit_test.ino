@@ -1,6 +1,7 @@
 /* 
- * rosserial Subscriber Example
- * Blinks an LED on callback
+ * cmd_vel_unit_test
+ * Subscrubes to cmd_vel. When cmd_val is published to, converts linear and angular velocities in the Twist message to
+ * port and starboard motor speeds, which are controlled by Servo values (0-90-180). Sends motor signals on loop().
  */
 
 #include <ros.h>
@@ -11,68 +12,102 @@ ros::NodeHandle  nh;
 Servo port_motors;
 Servo starboard_motors;
 
-float port_speed = 0; // range from -1 to 1 
-float starboard_speed = 0; // range from -1 to 1 
+float port_speed = 0; // range from 24 to 156
+float starboard_speed = 0; // range from 24 to 156
 
+//Since the cmd_vel speeds range between -1 and 1, the following variables simplify
+//the math needed to convert these speeds to the 24-90-156 speeds. Feel free to hard-code these in. 
+float motor_offset = (156.0+24.0)/2;
+float motor_multiplier = (156.0-24.0)/2;
+
+//cmdvel_cb: The callback function when a Twist msg is received on cmd_vel.
+//The callback deconstructs the twist and sends it to the setMotorSpeed function.
 void cmdvel_cb( const geometry_msgs::Twist& msg){
   float linearSpeed = msg.linear.x;
   float angularDir = msg.angular.z;
-
-
-  //If angular direction = 0, then we send linear speed * r to both motors.
-  //If angular dirction = -1 then we send linear speed * r to the right motors, and 85 to the left.
-  //If angular dirction =  1 then we send linear speed * r to the left motors, and 85 to the right.
-  //If angluar speed = ang_speed, then se send linear speed*r to the left motors, and linear speed *r * (1-ang_speed) to the right.
-  //If angluar speed = -ang_speed, then se send linear speed*r to the right motors, and linear speed *r * (1-ang_speed) to the right.
-  
-  if (linearSpeed >= 0){ //we gon go forward!
-    if (angularDir == 0) { //straight
-        port_speed = linearSpeed;
-        starboard_speed = linearSpeed;
-    }
-    else if (angularDir>0){//right
-        port_speed = linearSpeed;
-        starboard_speed = linearSpeed*(1-angularDir)+0.05;
-    }
-    else if (angularDir<0){//left
-        starboard_speed = linearSpeed;
-        port_speed = linearSpeed*(1-angularDir)+0.05;
-    }
-  }
-  else {//we gon go straight backwards
-      starboard_speed = linearSpeed;
-      port_speed = linearSpeed;
-  }
+  setMotorSpeed(linearSpeed, angularDir);
 }
 
 ros::Subscriber<geometry_msgs::Twist> cmd("cmd_vel", &cmdvel_cb);
 
 void setup()
 { 
-  pinMode(13, OUTPUT);
+  //Initialize Hardware
   starboard_motors.attach(11);
   port_motors.attach(10);
+
+  //Initialize ROS and subscribe
   nh.initNode();
   nh.subscribe(cmd);
 }
 
-//mapFloat is a direct copy of the float function from Arduino.
-float mapfloat(long x, long in_min, long in_max, long out_min, long out_max)
-{
- return (float)(x - in_min) * (out_max - out_min) / (float)(in_max - in_min) + out_min;
-}
-
 void loop()
 {  
-  
-  port_motors.write(mapfloat(port_speed, -1.0,1.0, 24.0,156.0));
-  starboard_motors.write(mapfloat(starboard_speed, -1.0,1.0, 24.0,156.0));
+  //Power the motors from the values of the global variables.
+  port_motors.write(port_speed);
+  starboard_motors.write(starboard_speed);
 
-  char result[8]; // Buffer big enough for 7-character float
-  dtostrf(mapfloat(starboard_speed, -1.0,1.0, 24.0,156.0), 6, 2, result);  
-  
-  nh.loginfo(result);
-  
+  //Delay a bit
+  delay(100);
+
+  //ROS
   nh.spinOnce();
+  
+}
+
+//setMotorSpeed: Converts linar and angular speeds between -1 and 1 to Motor servo values from 24-90-156. These values are assigned to
+//global variables that handle motor speed (allowing speed to be changed in the loop()).
+void setMotorSpeed(float linearSpeed, float angularDir) {
+  //If angular direction = 0, then we send linear speed * r to both motors.
+  //If angular dirction = -1 then we send linear speed * r to the right motors, and 85 to the left.
+  //If angular dirction =  1 then we send linear speed * r to the left motors, and 85 to the right.
+  //If angluar speed = ang_speed, then se send linear speed*r to the left motors, and linear speed *r * (1-ang_speed) to the right.
+  //If angluar speed = -ang_speed, then se send linear speed*r to the right motors, and linear speed *r * (1-ang_speed) to the right.
+  
+  //Helper variables that designate motor speeds, but at the scale (i.e. -1 to 1) of the input values
+  float port_speed_rel; // range from -1 to 1
+  float starboard_speed_rel; // range from -1 to 1
+
+  //Calculate motors' differential speeds assigned to a scale of -1 to 1.
+  if (linearSpeed >= 0){ //we gon go forward!
+    if (angularDir == 0) { //straight
+        port_speed_rel = linearSpeed;
+        starboard_speed_rel = linearSpeed;
+    }
+    else if (angularDir>0){//right
+        port_speed_rel = linearSpeed;
+        starboard_speed_rel = linearSpeed*(1-angularDir)+.005;
+    }
+    else if (angularDir<0){//left
+        starboard_speed_rel = linearSpeed;
+        port_speed_rel = linearSpeed*(1-angularDir)+0.005;
+    }
+  }
+  else {//we gon go straight backwards
+      starboard_speed_rel = linearSpeed;
+      port_speed_rel = linearSpeed;
+  }
+
+  //Map relative speeds to actual motor values and update the global variables.
+  port_speed = round(port_speed_rel*motor_multiplier + motor_offset);
+  starboard_speed = round(starboard_speed_rel*motor_multiplier + motor_offset);
+
+  //Output debug values as Rosinfo
+  char pRelMsg[8]; //Empty char array required for dtostrf
+  char sRelMsg[8];
+  char pAbsMsg[8];
+  char sAbsMsg[8];
+  
+  dtostrf(port_speed_rel, 6, 2, pRelMsg); //Converts floats (and ints) to char arrays, which are required by loginfo.
+  dtostrf(starboard_speed_rel, 6, 2, sRelMsg);  
+  dtostrf(port_speed, 6, 2, pAbsMsg);  
+  dtostrf(starboard_speed, 6, 2, sAbsMsg);  
+  
+  nh.loginfo("Relative Motor Speed (port, starboard)"); //Equivalent to ROSINFO() in cpp
+  nh.loginfo(pRelMsg);
+  nh.loginfo(sRelMsg);
+  nh.loginfo("Absolute Motor Speed (port, starboard)");
+  nh.loginfo(pAbsMsg);
+  nh.loginfo(sAbsMsg);
   
 }

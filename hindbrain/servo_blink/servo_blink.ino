@@ -8,7 +8,7 @@
 Servo myservo1;  // create servo object to control a servo
 Servo myservo2;  // create servo object to control a servo
 
-int startLevel = 80;
+int startLevel = 156;
 int stopLevel = 90;
 
 int pos = 0;    // variable to store the servo position
