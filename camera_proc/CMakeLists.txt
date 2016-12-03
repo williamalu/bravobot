@@ -136,6 +136,7 @@ include_directories(
 ## Declare a C++ executable
 add_executable(camera_proc src/camera_proc.cpp)
 #add_executable(camera_pub src/camera_pub.cpp)
+add_executable(camera_track src/color_track.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
