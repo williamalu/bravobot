@@ -8,17 +8,20 @@
 #include <geometry_msgs/Twist.h>
 #include <Servo.h>
 
+#define PORT_MOTORS 10
+#define STARBOARD_MOTORS 11
+
 ros::NodeHandle  nh;
 Servo port_motors;
 Servo starboard_motors;
 
-float port_speed = 0; // range from 24 to 156
-float starboard_speed = 0; // range from 24 to 156
+int port_speed = 0; // range from 24 to 156
+int starboard_speed = 0; // range from 24 to 156
 
 //Since the cmd_vel speeds range between -1 and 1, the following variables simplify
 //the math needed to convert these speeds to the 24-90-156 speeds. Feel free to hard-code these in. 
-float motor_offset = (156.0+24.0)/2;
-float motor_multiplier = (156.0-24.0)/2;
+float motor_offset = 90.0;
+float motor_multiplier = (24.0-156.0)/2;
 
 //cmdvel_cb: The callback function when a Twist msg is received on cmd_vel.
 //The callback deconstructs the twist and sends it to the setMotorSpeed function.
@@ -33,8 +36,8 @@ ros::Subscriber<geometry_msgs::Twist> cmd("cmd_vel", &cmdvel_cb);
 void setup()
 { 
   //Initialize Hardware
-  starboard_motors.attach(11);
-  port_motors.attach(10);
+  starboard_motors.attach(STARBOARD_MOTORS);
+  port_motors.attach(PORT_MOTORS);
 
   //Initialize ROS and subscribe
   nh.initNode();
@@ -47,8 +50,6 @@ void loop()
   port_motors.write(port_speed);
   starboard_motors.write(starboard_speed);
 
-  //Delay a bit
-  delay(100);
 
   //ROS
   nh.spinOnce();
