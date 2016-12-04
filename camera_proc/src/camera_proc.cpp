@@ -66,45 +66,45 @@ public:
     image_pub_.publish(cv_ptr->toImageMsg());
   }
 
-  void colorTrack()
-  {
+  // void colorTrack()
+  // {
 
-    namedWindow("Control", CV_WINDOW_AUTOSIZE); //create a window called "Control"
+  //   namedWindow("Control", CV_WINDOW_AUTOSIZE); //create a window called "Control"
 
-    int iLowH = 170;
-    int iHighH = 179;
+  //   int iLowH = 170;
+  //   int iHighH = 179;
 
-    int iLowS = 150; 
-    int iHighS = 255;
+  //   int iLowS = 150; 
+  //   int iHighS = 255;
 
-    int iLowV = 60;
-    int iHighV = 255;
+  //   int iLowV = 60;
+  //   int iHighV = 255;
 
-    //Create trackbars in "Control" window
-    createTrackbar("LowH", "Control", &iLowH, 179); //Hue (0 - 179)
-    createTrackbar("HighH", "Control", &iHighH, 179);
+  //   //Create trackbars in "Control" window
+  //   createTrackbar("LowH", "Control", &iLowH, 179); //Hue (0 - 179)
+  //   createTrackbar("HighH", "Control", &iHighH, 179);
 
-    createTrackbar("LowS", "Control", &iLowS, 255); //Saturation (0 - 255)
-    createTrackbar("HighS", "Control", &iHighS, 255);
+  //   createTrackbar("LowS", "Control", &iLowS, 255); //Saturation (0 - 255)
+  //   createTrackbar("HighS", "Control", &iHighS, 255);
 
-    createTrackbar("LowV", "Control", &iLowV, 255);//Value (0 - 255)
-    createTrackbar("HighV", "Control", &iHighV, 255);
+  //   createTrackbar("LowV", "Control", &iLowV, 255);//Value (0 - 255)
+  //   createTrackbar("HighV", "Control", &iHighV, 255);
 
-    int iLastX = -1; 
-    int iLastY = -1;
-
-
-    Mat imgOriginal;
-    imgOriginal = videoptr;
-
-    Mat imgHSV;
-    imgHSV = videoptr;
-
-    //Create a black image with the size as the camera output
-    Mat imgLines = Mat::zeros( imgOriginal.size(), CV_8UC3 );
+  //   int iLastX = -1; 
+  //   int iLastY = -1;
 
 
-    cvtColor(imgOriginal, imgHSV, CV_RGB2HSV); //Convert the captured frame from BGR to HSV
+  //   Mat imgOriginal;
+  //   imgOriginal = videoptr;
+
+  //   Mat imgHSV;
+  //   imgHSV = videoptr;
+
+  //   //Create a black image with the size as the camera output
+  //   Mat imgLines = Mat::zeros( imgOriginal.size(), CV_8UC3 );
+
+
+  //   cvtColor(imgOriginal, imgHSV, CV_RGB2HSV); //Convert the captured frame from BGR to HSV
 
    
     // Mat imgThresholded;
@@ -149,14 +149,14 @@ public:
     //   cv::imshow("Original", imgOriginal); //show the original image
     // }
 
-  }
+  // }
 };
 
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "image_converter");
   ImageConverter ic;
-  ic.colorTrack();
+  // ic.colorTrack();
 
 
   while(ros::ok()){
