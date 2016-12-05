@@ -75,6 +75,8 @@ void colorDetectionCallback(const sensor_msgs::ImageConstPtr& original_image)
     //Add some delay in miliseconds. The function only works if there is at least one HighGUI window created and the window is active. If there are several HighGUI windows, any of them can be active.
     cv::waitKey(3);
 
+    // thresh_callback(0, 0 );
+
     //Convert the CvImage to a ROS image message and publish it on the "camera/image_processed" topic.
     pub.publish(cv_ptr->toImageMsg());
 }
@@ -127,13 +129,18 @@ void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
 void thresh_callback(int, void*)
 {
 
-  if (cv::countNonZero(::img_mask) < 1) 
+  while (cv::countNonZero(::img_mask) < 1) 
   {
     std::cout << "No thresh" << std::endl;
+    ros::spinOnce();
   }
-  else
-  {
-  // Detect edges using canny
+
+  while (cv::countNonZero(::img_mask) > 1 && ros::ok()){
+  // std::cout << "Boo" << std::endl;
+
+  // // else
+  // // {
+  // // Detect edges using canny
   cv::Canny(::img_mask, canny_output, thresh, thresh*2, 3 );
   
   // Find contours
@@ -156,21 +163,28 @@ void thresh_callback(int, void*)
   for( int i = 0; i< contours.size(); i++ )
      {
        cv::Scalar color = cv::Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
-       cv::drawContours( drawing, contours, i, color, 2, 8, hierarchy, 0, cv::Point() );
-       //UNCOMMENT AND FIX
-       cv::circle( drawing, center[i], radius[i], ( 255, 255, 255 ), 2, 8, 0 );
-       cv::circle(::img_mask, center[i], 200, cv::Scalar( 255, 255, 255 ), -1, 8);
+       // cv::drawContours( drawing, contours, i, color, 2, 8, hierarchy, 0, cv::Point() );
+
+       cv::circle( drawing, center[i], radius[i], cv::Scalar( 255, 255, 255 ), -1, 8, 0 );
+       // cv::circle(::img_mask, center[i], 200, cv::Scalar( 255, 255, 255 ), -1, 8);
      }
 
-  if (cv::countNonZero(drawing) < 1) 
-  {
-    std::cout << "No drawing" << std::endl;
-  }
+  // if (cv::countNonZero(drawing) < 1) 
+  // {
+  //   std::cout << "No drawing" << std::endl;
+  // }
 
   /// Show in a window
   // cv::namedWindow( "Contours", CV_WINDOW_AUTOSIZE );
-  cv::imshow( "Contours", ::img_mask );
+  cv::imshow( "Contours", drawing );
   cv::waitKey(3);
+
+  // if (key == ord("q")){
+  // cv::destroyWindow( "Contours");
+  // break
+  // }
+  // }
+  ros::spinOnce();
   }
 }
 
@@ -197,8 +211,10 @@ int main(int argc, char **argv)
 
     image_transport::Subscriber sub = it.subscribe("/image_raw", 1, colorDetectionCallback);
 
-    thresh_callback(0, 0 );
+    // thresh_callback(0, 0 );
     cv::createTrackbar("Canny thresh:","Ball", &thresh, 255,thresh_callback);
+
+    thresh_callback(0,0);
 
     //OpenCV HighGUI call to destroy a display window on shut-down.
     cv::destroyWindow(WINDOW);
