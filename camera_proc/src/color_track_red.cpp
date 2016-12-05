@@ -43,13 +43,8 @@ cv::RNG rng(12345);
 cv::Mat img_mask;
 
 cv::Mat img_hsv,canny_output,drawing;
-std::vector<cv::Point> contours;
+std::vector<cv::vector<cv::Point> > contours;
 std::vector<cv::Vec4i> hierarchy;
-
-//UNCOMMENT AND FIX
-// std::vector<Point> contours_poly( contours.size() );
-// std::vector<Point2f>center( contours.size() );
-// std::vector<float>radius( contours.size() );
 
 
 void colorDetectionCallback(const sensor_msgs::ImageConstPtr& original_image)
@@ -138,18 +133,23 @@ void thresh_callback(int, void*)
   }
   else
   {
-    /// Detect edges using canny
-    cv::Canny(::img_mask, canny_output, thresh, thresh*2, 3 );
+  // Detect edges using canny
+  cv::Canny(::img_mask, canny_output, thresh, thresh*2, 3 );
   
-    /// Find contours
-    cv::findContours( canny_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
+  // Find contours
+  cv::findContours( canny_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
   
+  std::vector<cv::vector<cv::Point> > contours_poly( contours.size() );
+  std::vector<cv::Point2f>center( contours.size() );
+  std::vector<float>radius( contours.size() );
+
   //UNCOMMENT AND FIX
-  // for( size_t i = 0; i < contours.size(); i++ )
-  // {
-  //   cv::approxPolyDP( cv::Mat(contours[i]), contours_poly[i], 3, true );
-  //   cv::minEnclosingCircle( contours_poly[i], center[i], radius[i] );
-  // }
+  for( size_t i = 0; i < contours.size(); i++ )
+  {
+    // std::cout << contours.type() << std::endl;
+    cv::approxPolyDP( contours[i], contours_poly[i], 3, true );
+    cv::minEnclosingCircle( contours_poly[i], center[i], radius[i] );
+  }
 
   // Draw contours
   drawing = cv::Mat( canny_output.size(), CV_8UC3);
@@ -158,8 +158,8 @@ void thresh_callback(int, void*)
        cv::Scalar color = cv::Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
        cv::drawContours( drawing, contours, i, color, 2, 8, hierarchy, 0, cv::Point() );
        //UNCOMMENT AND FIX
-       // cv::circle( drawing, center[i], radius[i], ( 255, 255, 255 ), 2, 8, 0 );
-       // cv::circle(::img_mask, center[i], 100, cv::Scalar( 255, 255, 255 ), -1, 8);
+       cv::circle( drawing, center[i], radius[i], ( 255, 255, 255 ), 2, 8, 0 );
+       cv::circle(::img_mask, center[i], 200, cv::Scalar( 255, 255, 255 ), -1, 8);
      }
 
   if (cv::countNonZero(drawing) < 1) 
@@ -169,7 +169,7 @@ void thresh_callback(int, void*)
 
   /// Show in a window
   // cv::namedWindow( "Contours", CV_WINDOW_AUTOSIZE );
-  cv::imshow( "Contours", drawing );
+  cv::imshow( "Contours", ::img_mask );
   cv::waitKey(3);
   }
 }
