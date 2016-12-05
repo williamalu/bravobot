@@ -14,9 +14,9 @@ class Arbiter(object):
 		rospy.init_node('arbiter')
 
 		self.vel_array = np.zeros([len(INPUTS), ARRAY_SIZE])
-		self.vel_array[:,5] = 1
+		self.vel_array[:,5] = .1
 		self.turn_array = np.zeros([len(INPUTS), ARRAY_SIZE])
-		self.turn_array[:,5] = 1
+		self.turn_array[:,5] = .1
 		
 		rospy.Subscriber('wpt/cmd_vel', Int8MultiArray, self.wpt_cmd_vel_cb)
 		rospy.Subscriber('obst/cmd_vel', Int8MultiArray, self.obst_cmd_vel_cb)
@@ -27,7 +27,9 @@ class Arbiter(object):
 		self.update_array(msg.data, INPUTS.index('wpt'))
 
 	def obst_cmd_vel_cb(self, msg):
+		print 'received msg'
 		self.update_array(msg.data, INPUTS.index('obst'))
+		print 'updated'
 
 	def update_array(self, data, row):
 		data = np.asarray(data).reshape([2, ARRAY_SIZE])
