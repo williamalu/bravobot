@@ -163,7 +163,7 @@ void thresh_callback(int, void*)
   for( int i = 0; i< contours.size(); i++ )
      {
        cv::Scalar color = cv::Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
-       cv::drawContours( drawing, contours, i, color, 2, 8, hierarchy, 0, cv::Point() );
+       // cv::drawContours( drawing, contours, i, color, 2, 8, hierarchy, 0, cv::Point() );
 
        cv::circle( drawing, center[i], radius[i], cv::Scalar( 255, 255, 255 ), -1, 8, 0 );
        // cv::circle(::img_mask, center[i], 200, cv::Scalar( 255, 255, 255 ), -1, 8);

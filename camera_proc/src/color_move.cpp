@@ -9,7 +9,7 @@
 #include "ros/ros.h"
 #include <vector>
 #include "sensor_msgs/LaserScan.h"
-#include "sensor_msgs/image_raw.h
+#include "sensor_msgs/image_raw.h"
 #include <string>
 #include <stdlib.h>
 #include <stdio.h>
