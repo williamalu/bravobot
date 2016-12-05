@@ -2,6 +2,7 @@
 <module type="CPP_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src/color_move.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/color_track_red.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/color_track_purple.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/camera_proc.cpp" isTestSource="false" />

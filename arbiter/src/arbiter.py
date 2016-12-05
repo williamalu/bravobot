@@ -47,10 +47,12 @@ class Arbiter(object):
 			turn_sum_array += self.turn_array[i]
 		
 		vel = vel_sum_array.argmax()
+		print vel
 		turn = turn_sum_array.argmax()
+		print turn
 		msg = Twist()
-		msg.linear.x = 2.0*vel/(ARRAY_SIZE-1)-1
-		msg.angular.z = 2.0*turn/(ARRAY_SIZE-1)-1
+		msg.linear.x = 2*vel/(ARRAY_SIZE-1)-1
+		msg.angular.z = 2*turn/(ARRAY_SIZE-1)-1
 		self.cmd_vel_pub.publish(msg)
 
 if __name__ == '__main__':
