@@ -1,13 +1,15 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(ros_lidar_data)
+project(camera_proc)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  sensor_msgs
+  cv_bridge
   roscpp
-  rospy
   std_msgs
+  image_transport
 )
 
 ## System dependencies are found with CMake's conventions
@@ -65,10 +67,14 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs
-# )
+#generate_messages(
+#  DEPENDENCIES
+#  sensor_msgs
+#	cv_bridge
+#	roscpp
+#	std_msgs
+#	image_transport
+#)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -101,9 +107,9 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES ros_lidar_data
-#  CATKIN_DEPENDS ros.cpp rospy std_msgs
-#  DEPENDS system_lib
+  LIBRARIES camera_proc
+  CATKIN_DEPENDS sensor_msgs
+  DEPENDS system_lib
 )
 
 ###########
@@ -118,26 +124,37 @@ include_directories(
 )
 
 ## Declare a C++ library
-# add_library(ros_lidar_data
-#   src/${PROJECT_NAME}/ros_lidar_data.cpp
-# )
+# add_library(camera_proc
+#   src/camera_proc.cpp
+#)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(ros_lidar_data ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(camera_proc ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-add_executable(ros_lidar_data_node src/ros_lidar_data_node.cpp src velocitizer.cpp)
+add_executable(camera_proc src/camera_proc.cpp)
+add_executable(color_track_purple src/color_track_purple.cpp)
+add_executable(color_track_red src/color_track_red.cpp)
+
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(ros_lidar_data_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(camera_proc_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(ros_lidar_data_node
+target_link_libraries(camera_proc
    ${catkin_LIBRARIES}
-# )
+)
+
+target_link_libraries(color_track_purple
+        ${catkin_LIBRARIES}
+        )
+
+target_link_libraries(color_track_red
+        ${catkin_LIBRARIES}
+        )
 
 #############
 ## Install ##
@@ -154,7 +171,7 @@ target_link_libraries(ros_lidar_data_node
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS ros_lidar_data ros_lidar_data_node
+# install(TARGETS camera_proc camera_proc_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -179,7 +196,7 @@ target_link_libraries(ros_lidar_data_node
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_ros_lidar_data.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_camera_proc.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
