@@ -1,3 +1,7 @@
-#ifndef _ESTOP_H
-#define _ESTOP_H
+#ifndef ESTOP_H
+#define ESTOP_H
 #endif
+
+#include "Arduino.h"
+
+void eStop();

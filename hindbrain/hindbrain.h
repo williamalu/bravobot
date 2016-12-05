@@ -1,6 +1,5 @@
-#ifndef _HINDBRAIN_H
-#define _HINDBRAIN_H
-#endif
+#ifndef HINDBRAIN_H
+#define HINDBRAIN_H
 
 #include <Adafruit_TiCoServo.h>
 #include <Adafruit_NeoPixel.h>
@@ -16,15 +15,6 @@ Adafruit_NeoPixel stripBackRight = Adafruit_NeoPixel(8,  LED_BACK_RIGHT,  NEO_GR
 
 uint32_t red   = ringFrontLeft.Color(10, 0, 0, 0);
 uint32_t white = ringFrontLeft.Color(0, 0, 0, 10);
-
-// E-Stop
-const int eStopPin = A4;
-
-// Sharp IR Distance Sensors
-const int sharpFrontLeft  = A0;
-const int sharpFrontRight = A1;
-const int sharpBackLeft   = A2;
-const int sharpBackRight  = A3;
 
 // Pan-Tilt Servos
 int pan  = 90;
@@ -46,5 +36,7 @@ char state   = 'r'; // Hindbrain state
                     // 's' = software stop
                     // 'e' = e-stop
                     // 'p' = rc passthrough
-char serialReadIn;  // 
-String readString;  // String to store midbrain commands from serial buffer (for testing of FSM switching without rosserial)
+
+#endif
+
+boolean readEstop();
