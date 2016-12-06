@@ -11,27 +11,19 @@
 void setup() {
   Serial.begin(9600);
 
-  pinMode(LED_PIN, OUTPUT);
   pinMode(ESTOP, INPUT);
+
+  setupLEDs();
 
   panServo.attach(7);
   tiltServo.attach(8);
   panServo.write(90);
   tiltServo.write(90);
 
-  rightMotors.attach(9);
-  leftMotors.attach(10);
+  rightMotors.attach(12);
+  leftMotors.attach(13);
   rightMotors.write(90);
   leftMotors.write(90);
-
-  ringFrontLeft.begin();
-  ringFrontRight.begin();
-  stripBackLeft.begin();
-  stripBackRight.begin();
-  ringFrontLeft.show();
-  ringFrontRight.show();
-  stripBackLeft.show();
-  stripBackRight.show();
 
   command = 's';
 }
@@ -45,10 +37,11 @@ void loop() {
     delay(2);
   }
 
-//  Serial.print("Commmand from midbrain: ");
-//  Serial.println(command);
+  Serial.print("Commmand from midbrain: ");
+  Serial.println(command);
 
-  if (readEstop()) {
+  // Temporary to be replaced with actual reading from e-stop relay
+  if (command == 'e') {
     state = 'e';
   }
 
@@ -62,13 +55,16 @@ void loop() {
     case 'p':
       state = 'p';
       break;
+    case 'e':
+      state = 'e';
+      break;
     default:
       state = 's';
       break;
   }
 
-//  Serial.print("Hindbrain state: ");
-//  Serial.println(state);
+  Serial.print("Hindbrain state: ");
+  Serial.println(state);
 
   switch (state) {
     case 'r':

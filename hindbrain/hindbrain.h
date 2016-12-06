@@ -2,19 +2,9 @@
 #define HINDBRAIN_H
 
 #include <Adafruit_TiCoServo.h>
-#include <Adafruit_NeoPixel.h>
 #include "pins.h"
 
 // Set up Arduino GPIO to support robot
-
-// LEDs and Indicator Lights
-Adafruit_NeoPixel ringFrontLeft  = Adafruit_NeoPixel(12, LED_FRONT_LEFT,  NEO_GRBW + NEO_KHZ800);
-Adafruit_NeoPixel ringFrontRight = Adafruit_NeoPixel(12, LED_FRONT_RIGHT, NEO_GRBW + NEO_KHZ800);
-Adafruit_NeoPixel stripBackLeft  = Adafruit_NeoPixel(8,  LED_BACK_LEFT,   NEO_GRBW + NEO_KHZ800);
-Adafruit_NeoPixel stripBackRight = Adafruit_NeoPixel(8,  LED_BACK_RIGHT,  NEO_GRBW + NEO_KHZ800);
-
-uint32_t red   = ringFrontLeft.Color(10, 0, 0, 0);
-uint32_t white = ringFrontLeft.Color(0, 0, 0, 10);
 
 // Pan-Tilt Servos
 int pan  = 90;

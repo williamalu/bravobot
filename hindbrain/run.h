@@ -3,5 +3,6 @@
 #endif
 
 #include "Arduino.h"
+#include "neopixels.h"
 
 void run();
