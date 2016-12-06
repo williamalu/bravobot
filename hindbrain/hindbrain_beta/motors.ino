@@ -21,6 +21,9 @@ void setMotorSpeed(float linearSpeed, float angularDir) {
   //If angular dirction =  1 then we send linear speed * r to the left motors, and 85 to the right.
   //If angluar speed = ang_speed, then se send linear speed*r to the left motors, and linear speed *r * (1-ang_speed) to the right.
   //If angluar speed = -ang_speed, then se send linear speed*r to the right motors, and linear speed *r * (1-ang_speed) to the right.
+
+  linearSpeed = constrain(linearSpeed,-1.0,1.0); //failsafe to prevent wackiness if values are unconstrained
+  angularDir = constrain(angularDir,-1.0,1.0);   //failsafe to prevent wackiness if values are unconstrained
   
   //Helper variables that designate motor speeds, but at the scale (i.e. -1 to 1) of the input values
   float port_speed_rel; // range from -1 to 1
