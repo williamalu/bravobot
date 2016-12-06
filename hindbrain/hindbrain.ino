@@ -3,10 +3,13 @@
 //Major Revisions: Changed architecture to FSM
 
 #include "hindbrain.h"
- 
-// For testing only
+
 int leftMotorSpeed = 90;
 int rightMotorSpeed = 90;
+int prevLeftMotorSpeed = 90;
+int prevRightMotorSpeed = 90;
+
+// For testing only
 int testDirection = 1; //1 is forward, 0 is backward
 
 // Initialize Hindbrain State
@@ -84,22 +87,22 @@ void loop() {
       break;
   }
 
-  if (testDirection == 1) {
-    leftMotorSpeed--;
-    rightMotorSpeed--;
-  }
-
-  if (testDirection == 0) {
-    leftMotorSpeed++;
-    rightMotorSpeed++;
-  }
-
-  if (leftMotorSpeed == 24 || rightMotorSpeed == 24) {
-    testDirection = 0;
-  }
-
-  if (leftMotorSpeed == 156 || rightMotorSpeed == 156){
-    testDirection = 1;
-  }
-
+  leftMotorSpeed = 24;
+  rightMotorSpeed = 24;
+  
+  // Test code that ramps motor speeds for run();
+//  if (testDirection == 1) {
+//    leftMotorSpeed--;
+//    rightMotorSpeed--;
+//  }
+//  if (testDirection == 0) {
+//    leftMotorSpeed++;
+//    rightMotorSpeed++;
+//  }
+//  if (leftMotorSpeed == 24 || rightMotorSpeed == 24) {
+//    testDirection = 0;
+//  }
+//  if (leftMotorSpeed == 156 || rightMotorSpeed == 156){
+//    testDirection = 1;
+//  }
 }

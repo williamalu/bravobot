@@ -26,3 +26,15 @@ void runMotors(int leftMotorRunSpeed, int rightMotorRunSpeed) {
     leftMotors.write(leftMotorRunSpeed);
     rightMotors.write(rightMotorRunSpeed);
 }
+
+// Used for e-stop and soft-stop
+void stopMotors() {
+    leftMotorSpeed = 90;
+    rightMotorSpeed = 90;
+    prevLeftMotorSpeed = 90;
+    prevRightMotorSpeed = 90;
+
+    leftMotors.write(prevLeftMotorSpeed);
+    rightMotors.write(prevRightMotorSpeed);
+}
+

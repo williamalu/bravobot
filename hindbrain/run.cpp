@@ -1,8 +1,22 @@
 #include "run.h"
 
 void run() {
-    Serial.print("Motor Speed in Run: ");
-    Serial.println(leftMotorSpeed);
-    runMotors(leftMotorSpeed, rightMotorSpeed);   
+    if (leftMotorSpeed != prevLeftMotorSpeed && leftMotorSpeed > prevLeftMotorSpeed) {
+      prevLeftMotorSpeed++;
+    }
+    if (leftMotorSpeed != prevLeftMotorSpeed && leftMotorSpeed < prevLeftMotorSpeed) {
+      prevLeftMotorSpeed--;
+    }
+    if (rightMotorSpeed != prevRightMotorSpeed && rightMotorSpeed > prevRightMotorSpeed) {
+      prevRightMotorSpeed++;
+    }
+    if (rightMotorSpeed != prevRightMotorSpeed && rightMotorSpeed < prevRightMotorSpeed) {
+      prevRightMotorSpeed--;
+    }
+
+    Serial.println(prevLeftMotorSpeed);
+    runMotors(prevLeftMotorSpeed, prevRightMotorSpeed);
     runLEDs();
+
+    delay(10);
 }

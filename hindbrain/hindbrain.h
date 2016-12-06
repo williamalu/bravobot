@@ -14,5 +14,7 @@
 
 extern int leftMotorSpeed;
 extern int rightMotorSpeed;
+extern int prevLeftMotorSpeed;
+extern int prevRightMotorSpeed;
 
 #endif

@@ -1,9 +1,7 @@
 #include "e_stop.h"
 
 void eStop() {
-    leftMotorSpeed = 90;
-    rightMotorSpeed = 90;
-    runMotors(leftMotorSpeed, rightMotorSpeed);
+    stopMotors();
     eStopLEDs();
 }
 

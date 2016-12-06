@@ -8,3 +8,4 @@
 
 void setupMotors();
 void runMotors(int leftMotorRunSpeed, int rightMotorRunSpeed);
+void stopMotors();
