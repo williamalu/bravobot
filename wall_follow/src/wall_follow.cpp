@@ -22,13 +22,14 @@ ros::Publisher pubMessage;
 double e_left = 0;
 double e_right = 0;
 float setPt = 0;
-float wallDist = 1;
-float P = 1;
-float D = 0.5;
+float wallDist = 1.25;
+float P = .5;
+float D = 0.25;
 float minSpd = 0.30;
 float maxSpd = 0.65;
 float minObstDist= 0.10;
 float angleCoef = 1;
+float midCoef = 0.05;
 
 //Publisher
 void publishMessage(double diffE_right, double diffE_left, double distMin_middle, double angleMin_right, double angleMin_left, double angleMin_middle)
@@ -39,12 +40,19 @@ void publishMessage(double diffE_right, double diffE_left, double distMin_middle
     double rotVel_left = setPt + -(P*e_left + D*diffE_left) + angleCoef * (angleMin_left);    //PD controller
 
     double rotVel_right = 0;
+    double rotVel_middle = 0;
 
     if(e_right < 0) {
         rotVel_right = setPt + (P * e_right + D * diffE_right) + angleCoef * (angleMin_right);    //PD controller
     }
 
-    double rotVel_middle = -(P*distMin_middle) + angleCoef * (angleMin_middle);
+    if(distMin_middle < 1.5){
+        rotVel_middle = midCoef*((P*distMin_middle) + angleCoef * (angleMin_middle));
+    }
+
+    ROS_INFO("rotVel_left= %f", rotVel_left);
+    ROS_INFO("rotVel_right= %f", rotVel_right);
+    ROS_INFO("rotVel_middle= %f", rotVel_middle);
 
     double rotVel = rotVel_left + rotVel_right + rotVel_middle;
     msg.angular.z = rotVel;
@@ -58,6 +66,8 @@ void publishMessage(double diffE_right, double diffE_left, double distMin_middle
     //publishing message
     pubMessage.publish(msg);
     
+    ROS_INFO("PARAMETER VALUES: %f %f %f %f %f %f %f %f %f", P, D, minSpd, maxSpd, setPt, wallDist, minObstDist, angleCoef, midCoef);
+
     /*if(!ros::ok()){
         ROS_INFO("P = %f", P);
         ROS_INFO("D = %f", D);
@@ -80,10 +90,10 @@ void messageCallback(const sensor_msgs::LaserScan msg)
     int two_thirds = 2*one_third;
     int minIndex_right = one_third-1;
     int minIndex_middle = two_thirds-1;
-    int minIndex_left = size-1;
+    int minIndex_left = size-50;
 
     //This cycle goes through array and finds minimum
-    for(int i = 0; i < one_third; i++)
+    for(int i = 50; i < one_third; i++)
     {
         if (msg.ranges[i] < msg.ranges[minIndex_right] && msg.ranges[i] > minObstDist){
             minIndex_right = i;
@@ -95,12 +105,17 @@ void messageCallback(const sensor_msgs::LaserScan msg)
             minIndex_middle = i;
         }
     }
-    for(int i = two_thirds; i < size; i++)
+
+    int size_adj = size - 50;
+
+    for(int i = two_thirds; i < size_adj; i++)
     {
         if (msg.ranges[i] < msg.ranges[minIndex_left] && msg.ranges[i] > minObstDist){
             minIndex_left = i;
         }
     }
+
+    ROS_INFO("%i %i", size_adj, minIndex_left);
 
     //Calculation of angles from indexes and storing data to class variables.
     double angleMin_left = (size-minIndex_left)*msg.angle_increment;
@@ -125,6 +140,8 @@ void messageCallback(const sensor_msgs::LaserScan msg)
     ROS_INFO( "   diffE_right= %f", diffE_right);
     ROS_INFO( "   angleMin_right= %f", angleMin_right);
     ROS_INFO("dist_middle= %f", distMin_middle);
+    ROS_INFO( "   angleMin_middle= %f", angleMin_middle);
+
 
     //Invoking method for publishing message
     publishMessage(diffE_right, diffE_left, distMin_middle, angleMin_right, angleMin_left, angleMin_middle);
@@ -166,9 +183,15 @@ void setMinObstDist(const std_msgs::Float32::ConstPtr& msg){
 }
 
 void setAngleCoef(const std_msgs::Float32::ConstPtr& msg){
-    setPt = msg->data;
+    angleCoef = msg->data;
     ROS_INFO("ANGLE_COEF CHANGED.");
 }
+
+void setMidCoef(const std_msgs::Float32::ConstPtr& msg){
+    midCoef = msg->data;
+    ROS_INFO("MID_COEF CHANGED.");
+}
+
 
 int main(int argc, char **argv)
 {
@@ -188,7 +211,8 @@ int main(int argc, char **argv)
     ros::Subscriber wallDistSub = n.subscribe("wall_follow/wallDist", 1, setWallDist);
     ros::Subscriber setPtSub = n.subscribe("wall_follow/setPt", 1, setSetPt);
     ros::Subscriber minDistSub = n.subscribe("wall_follow/minObstDist", 1, setMinObstDist);
-    ros::Subscriber angleCoeffSub = n.subscribe("wall_follow/angleCoef", 1, setAngleCoef);
+    ros::Subscriber angleCoefSub = n.subscribe("wall_follow/angleCoef", 1, setAngleCoef);
+    ros::Subscriber midCoefSub = n.subscribe("wall_follow/midCoef", 1, setMidCoef);
     ros::spin();
     
     return 0;
