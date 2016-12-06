@@ -31,7 +31,7 @@ float minObstDist= 0.10;
 float angleCoef = 1;
 
 //Publisher
-void publishMessage(double diffE_right, double diffE_left, double angleMin_right, double angleMin_left)
+void publishMessage(double diffE_right, double diffE_left, double distMin_middle, double angleMin_right, double angleMin_left, double angleMin_middle)
 {
     //preparing message
     geometry_msgs::Twist msg;
@@ -44,7 +44,9 @@ void publishMessage(double diffE_right, double diffE_left, double angleMin_right
         rotVel_right = setPt + (P * e_right + D * diffE_right) + angleCoef * (angleMin_right);    //PD controller
     }
 
-    double rotVel = rotVel_left + rotVel_right;
+    double rotVel_middle = -(P*distMin_middle) + angleCoef * (angleMin_middle);
+
+    double rotVel = rotVel_left + rotVel_right + rotVel_middle;
     msg.angular.z = rotVel;
 
     if(rotVel < 0){
@@ -103,6 +105,7 @@ void messageCallback(const sensor_msgs::LaserScan msg)
     //Calculation of angles from indexes and storing data to class variables.
     double angleMin_left = (size-minIndex_left)*msg.angle_increment;
     double angleMin_right = (minIndex_right)*msg.angle_increment;
+    double angleMin_middle = (size*3/4-minIndex_middle)*msg.angle_increment;
 
     double distMin_right = msg.ranges[minIndex_right];
     double distMin_middle = msg.ranges[minIndex_middle];
@@ -121,9 +124,10 @@ void messageCallback(const sensor_msgs::LaserScan msg)
     ROS_INFO("dist_right= %f", distMin_right);
     ROS_INFO( "   diffE_right= %f", diffE_right);
     ROS_INFO( "   angleMin_right= %f", angleMin_right);
+    ROS_INFO("dist_middle= %f", distMin_middle);
 
     //Invoking method for publishing message
-    publishMessage(diffE_right, diffE_left, angleMin_right, angleMin_left);
+    publishMessage(diffE_right, diffE_left, distMin_middle, angleMin_right, angleMin_left, angleMin_middle);
 }
 
 void setP(const std_msgs::Float32::ConstPtr& msg){
