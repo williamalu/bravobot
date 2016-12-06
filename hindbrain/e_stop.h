@@ -2,8 +2,7 @@
 #define ESTOP_H
 #endif
 
-#include "Arduino.h"
-#include "pins.h"
-#include "neopixels.h"
+#include "hindbrain.h"
 
 void eStop();
+boolean readEstop();

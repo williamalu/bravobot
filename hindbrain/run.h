@@ -2,7 +2,6 @@
 #define _RUN_H
 #endif
 
-#include "Arduino.h"
-#include "neopixels.h"
+#include "hindbrain.h"
 
 void run();

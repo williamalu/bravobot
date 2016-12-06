@@ -1,5 +1,8 @@
 #include "soft_stop.h"
 
 void softStop() {
-  softStopLEDs();
+    leftMotorSpeed = 90;
+    rightMotorSpeed = 90;   
+    runMotors(leftMotorSpeed, rightMotorSpeed);
+    softStopLEDs();
 }

@@ -5,9 +5,9 @@
 #include <Adafruit_NeoPixel.h>
 #include "pins.h"
 
+#endif
+
 void setupLEDs();
 void softStopLEDs();
 void eStopLEDs();
 void runLEDs();
-
-#endif

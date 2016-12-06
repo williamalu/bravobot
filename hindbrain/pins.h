@@ -16,4 +16,8 @@
 #define SHARP_BACK_LEFT   A2
 #define SHARP_BACK_RIGHT  A3
 
+// Motors
+#define LEFT_MOTORS  12
+#define RIGHT_MOTORS 13
+
 #endif

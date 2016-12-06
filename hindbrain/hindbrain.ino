@@ -3,10 +3,22 @@
 //Major Revisions: Changed architecture to FSM
 
 #include "hindbrain.h"
-#include "run.h"
-#include "e_stop.h"
-#include "soft_stop.h"
-#include "rc_passthrough.h"
+ 
+// For testing only
+int leftMotorSpeed = 90;
+int rightMotorSpeed = 90;
+int testDirection = 1; //1 is forward, 0 is backward
+
+// Initialize Hindbrain State
+char command = 'g'; // Command from midbrain
+                    // 'g' = run
+                    // 's' = software stop
+                    // 'p' = rc passthrough
+char state   = 'r'; // Hindbrain state
+                    // 'r' = run
+                    // 's' = software stop
+                    // 'e' = e-stop
+                    // 'p' = rc passthrough
 
 void setup() {
   Serial.begin(9600);
@@ -14,18 +26,9 @@ void setup() {
   pinMode(ESTOP, INPUT);
 
   setupLEDs();
+  setupMotors();
 
-  panServo.attach(7);
-  tiltServo.attach(8);
-  panServo.write(90);
-  tiltServo.write(90);
-
-  rightMotors.attach(12);
-  leftMotors.attach(13);
-  rightMotors.write(90);
-  leftMotors.write(90);
-
-  command = 's';
+  command = 's'; // default to software stopped mode for safety
 }
 
 void loop() {
@@ -37,8 +40,8 @@ void loop() {
     delay(2);
   }
 
-  Serial.print("Commmand from midbrain: ");
-  Serial.println(command);
+//  Serial.print("Commmand from midbrain: ");
+//  Serial.println(command);
 
   // Temporary to be replaced with actual reading from e-stop relay
   if (command == 'e') {
@@ -49,22 +52,22 @@ void loop() {
     case 'g':
       state = 'r';
       break;
+    case 'e':
+      state = 'e';
+      break;
     case 's':
       state = 's';
       break;
     case 'p':
       state = 'p';
       break;
-    case 'e':
-      state = 'e';
-      break;
     default:
       state = 's';
       break;
   }
 
-  Serial.print("Hindbrain state: ");
-  Serial.println(state);
+//  Serial.print("Hindbrain state: ");
+//  Serial.println(state);
 
   switch (state) {
     case 'r':
@@ -80,10 +83,23 @@ void loop() {
       rcPassthrough();
       break;
   }
-}
 
-// Reads relay attached to robot e-stop switch
-boolean readEstop() {
-  boolean eStopTriggered = digitalRead(ESTOP);
-  return eStopTriggered;
+  if (testDirection == 1) {
+    leftMotorSpeed--;
+    rightMotorSpeed--;
+  }
+
+  if (testDirection == 0) {
+    leftMotorSpeed++;
+    rightMotorSpeed++;
+  }
+
+  if (leftMotorSpeed == 24 || rightMotorSpeed == 24) {
+    testDirection = 0;
+  }
+
+  if (leftMotorSpeed == 156 || rightMotorSpeed == 156){
+    testDirection = 1;
+  }
+
 }
