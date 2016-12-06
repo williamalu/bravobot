@@ -7,7 +7,7 @@
 
 #define SUBSCRIBER_BUFFER_SIZE 1  // Size of buffer for subscriber.
 #define PUBLISHER_BUFFER_SIZE 1000  // Size of buffer for publisher.
-#define WALL_DISTANCE 0.13
+#define WALL_DISTANCE 1
 #define MAX_SPEED 0.5
 //#define P 10    // Proportional constant for controller
 //#define D 5     // Derivative constant for controller
@@ -23,8 +23,8 @@ double e = 0;
 double setPt = 0;
 float P = 1;
 float D = 0.5;
-float minSpd = 0.15;
-float maxSpd = 1;
+float minSpd = 0.30;
+float maxSpd = 0.65;
 
 //Publisher
 void publishMessage(double diffE, double distMin_right, double distMin_middle, double distMin_left, double angleMin)
@@ -32,10 +32,15 @@ void publishMessage(double diffE, double distMin_right, double distMin_middle, d
     //preparing message
     geometry_msgs::Twist msg;
 
-    double rotVel = setPt + DIRECTION*(P*e + D*diffE) + ANGLE_COEF * (angleMin);    //PD controller
+    double rotVel = setPt + -(P*e + D*diffE) + ANGLE_COEF * (angleMin);    //PD controller
     msg.angular.z = rotVel;
-    msg.linear.x = (maxSpd - minSpd) * (rotVel - setPt) + minSpd;
 
+    if(rotVel < 0){
+	msg.linear.x = maxSpd;
+    } else {
+        msg.linear.x = maxSpd - (maxSpd - minSpd) * (fabs(rotVel) - setPt);
+    }
+ 
     //publishing message
     pubMessage.publish(msg);
 }
@@ -80,6 +85,10 @@ void messageCallback(const sensor_msgs::LaserScan msg)
     //double distFront = msg.ranges[size/2];
     double diffE = (distMin_left - WALL_DISTANCE) - e;
     e = distMin_left - WALL_DISTANCE;
+
+    ROS_INFO("dist_left= %f", distMin_left);
+    ROS_INFO( "   diffE= %f", diffE);
+    ROS_INFO( "   angleMin= %f", angleMin);
 
     //Invoking method for publishing message
     publishMessage(diffE,distMin_right,distMin_middle,distMin_left,angleMin);
