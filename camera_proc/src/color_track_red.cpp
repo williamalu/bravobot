@@ -41,6 +41,8 @@ int thresh = 100;
 int max_thresh = 255;
 cv::RNG rng(12345);
 cv::Mat img_mask;
+cv::Mat grey_cnt;
+cv::Mat hsv_cnt;
 
 cv::Mat img_hsv,canny_output,drawing;
 std::vector<cv::vector<cv::Point> > contours;
@@ -141,38 +143,28 @@ void thresh_callback(int, void*)
   // // else
   // // {
   // // Detect edges using canny
-  cv::Canny(::img_mask, canny_output, thresh, thresh*2, 3 );
+  cv::cvtColor(::img_mask,grey_cnt,CV_GRAY2BGR);
+  cv::cvtColor(grey_cnt,hsv_cnt,CV_BGR2HSV);
+  cv::Canny(grey_cnt, canny_output, thresh, thresh*2, 3 );
   
   // Find contours
   cv::findContours( canny_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
-  
+  // cv::cvtColor(contours,bgr_cnt,CV_BGR2GRAY);
+
   std::vector<cv::vector<cv::Point> > contours_poly( contours.size() );
   std::vector<cv::Point2f>center( contours.size() );
   std::vector<float>radius( contours.size() );
+
+  drawing = cv::Mat( canny_output.size(), CV_8UC3);
 
   //UNCOMMENT AND FIX
   for( size_t i = 0; i < contours.size(); i++ )
   {
     // std::cout << contours.type() << std::endl;
-    cv::approxPolyDP( contours[i], contours_poly[i], 3, true );
-    cv::minEnclosingCircle( contours_poly[i], center[i], radius[i] );
+    // cv::approxPolyDP( contours[i], contours_poly[i], 3, true );
+    cv::minEnclosingCircle( contours[i], center[i], radius[i] );
+    // cv::circle( drawing, center[i], radius[i], cv::Scalar( 255, 255, 255 ), -1, 8, 0 );
   }
-
-  // Draw contours
-  drawing = cv::Mat( canny_output.size(), CV_8UC3);
-  for( int i = 0; i< contours.size(); i++ )
-     {
-       cv::Scalar color = cv::Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
-       // cv::drawContours( drawing, contours, i, color, 2, 8, hierarchy, 0, cv::Point() );
-
-       cv::circle( drawing, center[i], radius[i], cv::Scalar( 255, 255, 255 ), -1, 8, 0 );
-       // cv::circle(::img_mask, center[i], 200, cv::Scalar( 255, 255, 255 ), -1, 8);
-     }
-
-  // if (cv::countNonZero(drawing) < 1) 
-  // {
-  //   std::cout << "No drawing" << std::endl;
-  // }
 
   /// Show in a window
   // cv::namedWindow( "Contours", CV_WINDOW_AUTOSIZE );
