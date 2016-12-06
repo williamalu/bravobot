@@ -2,13 +2,13 @@
 
 #include <Servo.h>
 
-#define PORT_MOTORS 10
-#define STARBOARD_MOTORS 11
+#define PORT_MOTORS 12
+#define STARBOARD_MOTORS 13
 
 Servo myservo1;  // create servo object to control a servo
 Servo myservo2;  // create servo object to control a servo
 
-int startLevel = 156;
+int startLevel = 83;
 int stopLevel = 90;
 
 int pos = 0;    // variable to store the servo position

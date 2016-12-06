@@ -1,6 +1,6 @@
 /* 
  * hindbrain_beta
- * A quick hindbrain with a ROSSerial pipe. Oy vey!
+ * A hindbrain with a ROSSerial pipe. Oy vey!
  */
 
 #include "includes.h"
@@ -13,22 +13,38 @@ void setup()
   //Initialize Hardware
   setupMotors();
   setupROS();
+  setupEStop();
+  setupIR();
+  setupNeopixels();
+
+  mode = SOFT_STOP_MODE;
 }
 
 void loop()
 {  
   publishAtInterval();
-  checkIR();
   updateNeopixels();
+  
+  if(is_EStop_ok() == false){
+    mode = PHYS_ESTOP_MODE;
+  }
+  else if(is_IR_ok() == true && is_ROS_ok() == true){
+    mode = OK_MODE;
+  }
+  else if(is_IR_ok() == false || is_ROS_ok() == false){
+    mode = SOFT_STOP_MODE;
+  }
+  
 
   switch (mode) {
     case OK_MODE:
+      updateRampingSpeed();
       runMotors();
       break;
     case PHYS_ESTOP_MODE:
       stopMotors();
       break;
-    case IR_DETECTED_MODE:
+    case SOFT_STOP_MODE:
       stopMotors();
       break;
     default:

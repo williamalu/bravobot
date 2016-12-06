@@ -12,4 +12,4 @@
 #define IR_BACK_PORT A2
 #define IR_BACK_STARBOARD A3
 
-#define MANUAL_ESTOP A4
+#define PHYSICAL_ESTOP A4

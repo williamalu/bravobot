@@ -4,18 +4,43 @@ void setupMotors() {
 }
 
 void runMotors() {
-  port_motors.write(port_speed);
-  starboard_motors.write(starboard_speed);
+  port_motors.write(port_speed_actual);
+  starboard_motors.write(starboard_speed_actual);
 }
 
 void stopMotors() {
   port_motors.write(MOTOR_STOP);
   starboard_motors.write(MOTOR_STOP);
+  port_speed_actual = MOTOR_STOP;
+  starboard_speed_actual = MOTOR_STOP;
+  port_speed_commanded = MOTOR_STOP;
+  starboard_speed_commanded = MOTOR_STOP;
 }
 
+void updateRampingSpeed(){
+  if(millis() - last_increment_time > MOTOR_INCREMENT_DELAY){
+    last_increment_time = millis();
+    if(port_speed_commanded > port_speed_actual) port_speed_actual++;
+    else if(port_speed_commanded < port_speed_actual) port_speed_actual--;
+    if(starboard_speed_commanded > starboard_speed_actual) starboard_speed_actual++;
+    else if(starboard_speed_commanded < starboard_speed_actual) starboard_speed_actual--; 
+    char pMsg[8]; 
+    char sMsg[8];  
+    dtostrf(port_speed_actual, 6, 2, pMsg); //Converts floats (and ints) to char arrays, which are required by loginfo.
+    dtostrf(starboard_speed_actual, 6, 2, sMsg);
+    nh.loginfo("Motor speed changed. New speed (port, starboard):");
+    nh.loginfo(pMsg);
+    nh.loginfo(sMsg);
+  }
+}
 //setMotorSpeed: Converts linar and angular speeds between -1 and 1 to Motor servo values from 24-90-156. These values are assigned to
 //global variables that handle motor speed (allowing speed to be changed in the loop()).
 void setMotorSpeed(float linearSpeed, float angularDir) {
+  if(mode != OK_MODE){ //don't change motor control values if not in OK_MODE
+    port_speed_commanded = MOTOR_STOP;
+    starboard_speed_commanded = MOTOR_STOP;
+    return;
+  }
   //If angular direction = 0, then we send linear speed * r to both motors.
   //If angular dirction = -1 then we send linear speed * r to the right motors, and 85 to the left.
   //If angular dirction =  1 then we send linear speed * r to the left motors, and 85 to the right.
@@ -51,26 +76,8 @@ void setMotorSpeed(float linearSpeed, float angularDir) {
   }
 
   //Map relative speeds to actual motor values and update the global variables.
-  port_speed = round(port_speed_rel*MOTOR_MULTIPLIER + MOTOR_OFFSET);
-  starboard_speed = round(starboard_speed_rel*MOTOR_MULTIPLIER + MOTOR_OFFSET);
-
-//  //Output debug values as Rosinfo
-//  char pRelMsg[8]; //Empty char array required for dtostrf
-//  char sRelMsg[8];
-//  char pAbsMsg[8];
-//  char sAbsMsg[8];
-//  
-//  dtostrf(port_speed_rel, 6, 2, pRelMsg); //Converts floats (and ints) to char arrays, which are required by loginfo.
-//  dtostrf(starboard_speed_rel, 6, 2, sRelMsg);  
-//  dtostrf(port_speed, 6, 2, pAbsMsg);  
-//  dtostrf(starboard_speed, 6, 2, sAbsMsg);  
-//  
-//  nh.loginfo("Relative Motor Speed (port, starboard)"); //Equivalent to ROSINFO() in cpp
-//  nh.loginfo(pRelMsg);
-//  nh.loginfo(sRelMsg);
-//  nh.loginfo("Absolute Motor Speed (port, starboard)");
-//  nh.loginfo(pAbsMsg);
-//  nh.loginfo(sAbsMsg);
+  port_speed_commanded = round(port_speed_rel*MOTOR_MULTIPLIER + MOTOR_OFFSET);
+  starboard_speed_commanded = round(starboard_speed_rel*MOTOR_MULTIPLIER + MOTOR_OFFSET);
   
 }
 

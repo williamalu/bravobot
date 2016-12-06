@@ -8,20 +8,25 @@
 #include <geometry_msgs/Twist.h>
 #include <Servo.h>
 
-#define PORT_MOTORS 10
-#define STARBOARD_MOTORS 11
+#define PORT_MOTORS 12
+#define STARBOARD_MOTORS 13
 
 ros::NodeHandle  nh;
 Servo port_motors;
 Servo starboard_motors;
 
-int port_speed = 0; // range from 24 to 156
-int starboard_speed = 0; // range from 24 to 156
+int port_speed_dest = 90;
+int starboard_speed_dest = 90;
+uint32_t last_increment_time = 0;
+
+int port_speed = 90; // range from 24 to 156
+int starboard_speed = 90; // range from 24 to 156
+
 
 //Since the cmd_vel speeds range between -1 and 1, the following variables simplify
 //the math needed to convert these speeds to the 24-90-156 speeds. Feel free to hard-code these in. 
 float motor_offset = 90.0;
-float motor_multiplier = (24.0-156.0)/2;
+float motor_multiplier = (24.0-156.0)/2.0;
 
 //cmdvel_cb: The callback function when a Twist msg is received on cmd_vel.
 //The callback deconstructs the twist and sends it to the setMotorSpeed function.
@@ -47,9 +52,24 @@ void setup()
 void loop()
 {  
   //Power the motors from the values of the global variables.
+  if(millis() - last_increment_time > 50){
+    last_increment_time = millis();
+    if(port_speed_dest > port_speed) port_speed++;
+    else if(port_speed_dest < port_speed) port_speed--;
+    if(starboard_speed_dest > starboard_speed) starboard_speed++;
+    else if(starboard_speed_dest < starboard_speed) starboard_speed--; 
+    char pMsg[8]; 
+    char sMsg[8];  
+    dtostrf(port_speed, 6, 2, pMsg); //Converts floats (and ints) to char arrays, which are required by loginfo.
+    dtostrf(starboard_speed, 6, 2, sMsg);
+    nh.loginfo(pMsg);
+    nh.loginfo(sMsg);
+  }
+
+  
   port_motors.write(port_speed);
   starboard_motors.write(starboard_speed);
-
+  
 
   //ROS
   nh.spinOnce();
@@ -91,8 +111,8 @@ void setMotorSpeed(float linearSpeed, float angularDir) {
   }
 
   //Map relative speeds to actual motor values and update the global variables.
-  port_speed = round(port_speed_rel*motor_multiplier + motor_offset);
-  starboard_speed = round(starboard_speed_rel*motor_multiplier + motor_offset);
+  port_speed_dest = round(port_speed_rel*motor_multiplier + motor_offset);
+  starboard_speed_dest = round(starboard_speed_rel*motor_multiplier + motor_offset);
 
   //Output debug values as Rosinfo
   char pRelMsg[8]; //Empty char array required for dtostrf
