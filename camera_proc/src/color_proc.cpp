@@ -19,12 +19,12 @@ static const std::string contoured_window = "Contoured";
 image_transport::Publisher pub;
 
 // Define initial filter parameters
-int blur = 1;
+int blur = 20;
 int lowerH = 0;
-int upperH = 23;
+int upperH = 84;
 int lowerS = 165;
 int upperS = 256;
-int lowerV = 203;
+int lowerV = 125;
 int upperV = 256;
 
 void callback(const sensor_msgs::ImageConstPtr& original_image)
@@ -106,7 +106,7 @@ int main(int argc, char **argv)
     const std::string control_window = "Filter Controls";
 
     cv::namedWindow(control_window);
-    cv::createTrackbar("blur", control_window, &blur, 10, NULL);
+    cv::createTrackbar("blur", control_window, &blur, 30, NULL);
     cv::createTrackbar("lowerH", control_window, &lowerH, 180, NULL);
     cv::createTrackbar("upperH", control_window, &upperH, 180, NULL);
     cv::createTrackbar("lowerS", control_window, &lowerS, 256, NULL);
