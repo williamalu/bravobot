@@ -1,5 +1,6 @@
 #include "run.h"
 
+// Millis storing functions for delay purposes
 unsigned long previousMillis = 0;
 unsigned long currentMillis;
 

@@ -10,6 +10,10 @@ uint32_t red   = ringFrontLeft.Color(50, 0, 0, 0);
 uint32_t white = ringFrontLeft.Color(0, 0, 0, 50);
 uint32_t off   = ringFrontLeft.Color(0, 0, 0, 0);
 
+// Millis storing functions for delay purposes
+unsigned long previousMillisLED = 0;
+unsigned long currentMillisLED;
+
 void setupLEDs() {
   ringFrontLeft.begin();
   ringFrontRight.begin();
@@ -42,33 +46,58 @@ void softStopLEDs() {
 }
 
 void eStopLEDs() {
-    for (int i = 0; i <= 11; i++) {
-      ringFrontLeft.setPixelColor(i, red);
-      ringFrontRight.setPixelColor(i, red);
+    currentMillisLED = millis();
+
+    if (currentMillisLED - previousMillisLED >= 100) {
+      previousMillisLED = currentMillisLED;
+
+      if (ringFrontLeft.getPixelColor(0) != off) {
+        Serial.println("Turning lights off.");
+        for (int i = 0; i <= 11; i++) {
+          ringFrontLeft.setPixelColor(i, off);
+          ringFrontRight.setPixelColor(i, off);
+        }
+        for (int i = 0; i <= 7; i++) {
+          stripBackLeft.setPixelColor(i, off);
+          stripBackRight.setPixelColor(i, off);
+        }
+        ringFrontLeft.show();
+        ringFrontRight.show();
+        stripBackLeft.show();
+        stripBackRight.show();
+      } 
+      else {
+        Serial.println("Turning lights on.");
+        for (int i = 0; i <= 11; i++) {
+          ringFrontLeft.setPixelColor(i, red);
+          ringFrontRight.setPixelColor(i, red);
+        }
+        for (int i = 0; i <= 7; i++) {
+          stripBackLeft.setPixelColor(i, red);
+          stripBackRight.setPixelColor(i, red);
+        }
+        ringFrontLeft.show();
+        ringFrontRight.show();
+        stripBackLeft.show();
+        stripBackRight.show();
+      }
     }
-    for (int i = 0; i <= 7; i++) {
-      stripBackLeft.setPixelColor(i, red);
-      stripBackRight.setPixelColor(i, red);
-    }
-    ringFrontLeft.show();
-    ringFrontRight.show();
-    stripBackLeft.show();
-    stripBackRight.show();
-    delay(100);
-    
-    for (int i = 0; i <= 11; i++) {
-      ringFrontLeft.setPixelColor(i, off);
-      ringFrontRight.setPixelColor(i, off);
-    }
-    for (int i = 0; i <= 7; i++) {
-      stripBackLeft.setPixelColor(i, off);
-      stripBackRight.setPixelColor(i, off);
-    }
-    ringFrontLeft.show();
-    ringFrontRight.show();
-    stripBackLeft.show();
-    stripBackRight.show();
-    delay(100);
+
+//    if (currentMillisLED - previousMillisLED >= 100) {
+//      previousMillisLED = currentMillisLED;
+//      for (int i = 0; i <= 11; i++) {
+//        ringFrontLeft.setPixelColor(i, off);
+//        ringFrontRight.setPixelColor(i, off);
+//      }
+//      for (int i = 0; i <= 7; i++) {
+//        stripBackLeft.setPixelColor(i, off);
+//        stripBackRight.setPixelColor(i, off);
+//      }
+//      ringFrontLeft.show();
+//      ringFrontRight.show();
+//      stripBackLeft.show();
+//      stripBackRight.show();
+//    }
 }
 
 void runLEDs() {
