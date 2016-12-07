@@ -37,18 +37,20 @@ void messageCallback(const std_msgs::Int16MultiArray input){
         msg.angular.z = 0;
     }else if (center.size() == 0){ // there might be obstacle on the right or left, but not in the middle, so we can go straight
         msg.angular.z = 0;
+        pub.publish(msg);
         std::cout << "I'm going straight, but there might be obstacles beside me" << std::endl;
     }else if (left.size() > 0 && center.size() > 0 && right.size() == 0){
         msg.angular.z = 1.0;
+        pub.publish(msg);
         std::cout << "I'm turning right" << std::endl;
     }else if (right.size()>0 && center.size()> 0 && left.size() == 0){
         msg.angular.z = -1.0;
+        pub.publish(msg);
         std::cout << "I'm turning left" <<std::endl;
     }else{ //if there's obstacles everywhere, just try going straight, and scream on the inside
         msg.angular.z = 0;
     }
 
-    pub.publish(msg);
 }
 
 
@@ -59,6 +61,6 @@ int main(int argc, char **argv) {
 
     ros::Subscriber sub = nh.subscribe("obstacle_positions", 10, messageCallback);
 
-    pub = nh.advertise<geometry_msgs::Twist>("cmr/cmd_vel", 1000);
+    pub = nh.advertise<geometry_msgs::Twist>("cmr/cam_cmd_vel", 1000);
     ros::spin();
 }

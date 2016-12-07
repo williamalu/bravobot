@@ -24,20 +24,22 @@
 ros::Publisher pubMessage;
 double e_left = 0;
 double e_right = 0;
-float setPt = -0.1;
+double angleMin_left = 0;
+float setPt = -0.05;
 float wallDist = 1.0;
-float P = 0.75;
-float D = 0.25;
+float P = 0.70;
+float D = 0.20;
 float minSpd = 0.30;
-float maxSpd = 1.0;
+float maxSpd = 0.65;
 float minObstDist= 0.10;
-float minWallDist = 0.75;
+float minWallDist = 0.80;
 float angleCoef = 1;
 float midCoef = 0.05;
-float maxLeftSpd = -0.50;
+float maxLeftSpd = -0.35;
+float angleJump = 0.17;
+float cornerTrackAngle = 0.02;
 //int lookAhead = 50;
-
-float rotVel_left = 0;
+bool block = false;
 
 /*float calcStdDev(std::vector<float> vals) {
     //Calculate mean
@@ -67,7 +69,7 @@ float rotVel_left = 0;
 }*/
 
 //Publisher
-void publishMessage(double diffE_right, double diffE_left, double distMin_left, double distMin_middle, double angleMin_right, double angleMin_left, double angleMin_middle)
+void publishMessage(double diffE_right, double diffE_left, double distMin_left, double distMin_middle, double angleMin_right, double angleMin_middle, double angleDiff)
 {
     //preparing message
     geometry_msgs::Twist msg;
@@ -80,13 +82,12 @@ void publishMessage(double diffE_right, double diffE_left, double distMin_left, 
     ROS_INFO("yDev= %f", yDev);*/
 
     //Determine direction
+    double rotVel_left = 0;
 
-    if(distMin_left > wallDist || distMin_left < minWallDist){
-        rotVel_left = setPt + -(P*e_left + D*diffE_left) + angleCoef * (angleMin_left);
-    } else if(distMin_left < wallDist && distMin_left > minWallDist){
-        rotVel_left = setPt;
+    if(block){
+        rotVel_left = setPt + -(P * ((e_left) + D * diffE_left));
     } else {
-        rotVel_left = setPt;
+        rotVel_left = setPt + -(P * e_left + D * diffE_left) + angleCoef * (angleMin_left);
     }
 
     double rotVel_right = 0;
@@ -109,6 +110,9 @@ void publishMessage(double diffE_right, double diffE_left, double distMin_left, 
     if(rotVel < maxLeftSpd){
         rotVel = maxLeftSpd;
     }
+    if(!std::isfinite(e_left) && !std::isfinite(e_right)){
+        rotVel = setPt;
+    }
 
     msg.angular.z = rotVel;
 
@@ -124,7 +128,7 @@ void publishMessage(double diffE_right, double diffE_left, double distMin_left, 
     //publishing message
     pubMessage.publish(msg);
     
-    ROS_INFO("PARAMETER VALUES: %f %f %f %f %f %f %f %f %f %f", P, D, minSpd, maxSpd, setPt, maxLeftSpd, wallDist, minObstDist, angleCoef, midCoef);
+    ROS_INFO("PARAMETER VALUES: %f %f %f %f %f %f %f %f %f %f %f %f %f", P, D, minSpd, maxSpd, setPt, maxLeftSpd, wallDist, minWallDist, minObstDist, angleJump, angleCoef, midCoef);
 
     /*if(!ros::ok()){
         ROS_INFO("P = %f", P);
@@ -171,7 +175,9 @@ void messageCallback(const sensor_msgs::LaserScan msg)
     }
 
     //Calculation of angles from indexes and storing data to class variables.
-    double angleMin_left = (size-minIndex_left)*msg.angle_increment;
+    double angleDiff_left = (size-minIndex_left)*msg.angle_increment - angleMin_left;
+
+    angleMin_left = (size-minIndex_left)*msg.angle_increment;
     double angleMin_right = (minIndex_right)*msg.angle_increment;
     double angleMin_middle = (size*3/4-minIndex_middle)*msg.angle_increment;
 
@@ -180,11 +186,37 @@ void messageCallback(const sensor_msgs::LaserScan msg)
     double distMin_left = msg.ranges[minIndex_left];
     //double distFront = msg.ranges[size/2];
 
-    double diffE_left = (distMin_left - wallDist) - e_left;
-    e_left = distMin_left - wallDist;
+    double diffE_left = 0;
+    double diffE_right = 0;
 
-    double diffE_right = (distMin_right - wallDist) - e_right;
-    e_right = distMin_right - wallDist;
+    if(angleDiff_left > angleJump){
+        block = true;
+    }
+    if (block){
+        if(angleDiff_left > cornerTrackAngle){
+            diffE_left = 0;
+            e_left = 0;
+
+            diffE_right = 0;
+            e_right = 0;
+        } else {
+            diffE_left = (distMin_left - minWallDist) - e_left;
+            e_left = distMin_left - minWallDist;
+
+            diffE_right = (distMin_right - minWallDist) - e_right;
+            e_right = distMin_right - minWallDist;
+        }
+
+        if(distMin_left > minWallDist + 0.1){
+            block = false;
+        }
+    } else {
+        diffE_left = (distMin_left - wallDist) - e_left;
+        e_left = distMin_left - wallDist;
+
+        diffE_right = (distMin_right - wallDist) - e_right;
+        e_right = distMin_right - wallDist;
+    }
 
     ROS_INFO("dist_left= %f", distMin_left);
     ROS_INFO( "   diffE_left= %f", diffE_left);
@@ -194,6 +226,7 @@ void messageCallback(const sensor_msgs::LaserScan msg)
     ROS_INFO( "   angleMin_right= %f", angleMin_right);
     ROS_INFO("dist_middle= %f", distMin_middle);
     ROS_INFO( "   angleMin_middle= %f", angleMin_middle);
+    ROS_INFO("angleDiff_left= %f", angleDiff_left);
 
     /*std::vector<float> xVals(size);
     std::vector<float> yVals(size);
@@ -207,7 +240,7 @@ void messageCallback(const sensor_msgs::LaserScan msg)
     }*/
 
     //Invoking method for publishing message
-    publishMessage(diffE_right, diffE_left, distMin_left, distMin_middle, angleMin_right, angleMin_left, angleMin_middle);
+    publishMessage(diffE_right, diffE_left, distMin_left, distMin_middle, angleMin_right, angleMin_middle, angleDiff_left);
 }
 
 void setP(const std_msgs::Float32::ConstPtr& msg){
@@ -260,6 +293,16 @@ void setMaxLeftSpd(const std_msgs::Float32::ConstPtr& msg){
     ROS_INFO("MAX_LEFT_SPEED CHANGED.");
 }
 
+void setAngleJump(const std_msgs::Float32::ConstPtr& msg){
+    angleJump = msg->data;
+    ROS_INFO("ANGLE_JUMP CHANGED.");
+}
+
+void setMinWallDist(const std_msgs::Float32::ConstPtr& msg){
+    minWallDist = msg->data;
+    ROS_INFO("MIN_WALL_DIST CHANGED.");
+}
+
 int main(int argc, char **argv)
 {
     //Initialization of node
@@ -277,10 +320,12 @@ int main(int argc, char **argv)
     ros::Subscriber minSpdSub = n.subscribe("wall_follow/minSpd", 1, setMinSpd);
     ros::Subscriber wallDistSub = n.subscribe("wall_follow/wallDist", 1, setWallDist);
     ros::Subscriber setPtSub = n.subscribe("wall_follow/setPt", 1, setSetPt);
-    ros::Subscriber minDistSub = n.subscribe("wall_follow/minObstDist", 1, setMinObstDist);
+    ros::Subscriber minObstDistSub = n.subscribe("wall_follow/minObstDist", 1, setMinObstDist);
     ros::Subscriber angleCoefSub = n.subscribe("wall_follow/angleCoef", 1, setAngleCoef);
     ros::Subscriber midCoefSub = n.subscribe("wall_follow/midCoef", 1, setMidCoef);
     ros::Subscriber maxLeftSpdSub = n.subscribe("wall_follow/maxLeftSpd", 1, setMaxLeftSpd);
+    ros::Subscriber angleJumpSub = n.subscribe("wall_follow/angleJump", 1, setAngleJump);
+    ros::Subscriber minWallDistSub = n.subscribe("wall_follow/minWallDist", 1, setMinWallDist);
     ros::spin();
     
     return 0;
