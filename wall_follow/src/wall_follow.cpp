@@ -24,17 +24,19 @@
 ros::Publisher pubMessage;
 double e_left = 0;
 double e_right = 0;
+double angleMin_left = 0;
 float setPt = -0.05;
 float wallDist = 1.0;
 float P = 0.75;
 float D = 0.25;
 float minSpd = 0.30;
-float maxSpd = 1.0;
+float maxSpd = .65;
 float minObstDist= 0.10;
-float minWallDist = 0.75;
+float minWallDist = 0.80;
 float angleCoef = 1;
 float midCoef = 0.05;
-float maxLeftSpd = -0.50;
+float maxLeftSpd = -0.35;
+float angleJump = 0.17;
 //int lookAhead = 50;
 
 /*float calcStdDev(std::vector<float> vals) {
@@ -65,7 +67,7 @@ float maxLeftSpd = -0.50;
 }*/
 
 //Publisher
-void publishMessage(double diffE_right, double diffE_left, double distMin_left, double distMin_middle, double angleMin_right, double angleMin_left, double angleMin_middle)
+void publishMessage(double diffE_right, double diffE_left, double distMin_left, double distMin_middle, double angleMin_right, double angleMin_middle, double angleDiff)
 {
     //preparing message
     geometry_msgs::Twist msg;
@@ -80,12 +82,10 @@ void publishMessage(double diffE_right, double diffE_left, double distMin_left, 
     //Determine direction
     double rotVel_left = 0;
 
-    if(distMin_left > wallDist || distMin_left < minWallDist){
-        rotVel_left = setPt + -(P*e_left + D*diffE_left) + angleCoef * (angleMin_left);
-    } else if(distMin_left < wallDist && distMin_left > minWallDist){
-        rotVel_left = setPt;
+    if(angleDiff > angleJump && distMin_left > minWallDist){
+        rotVel_left = setPt + -(P * ((e_left+wallDist-minWallDist) + D * diffE_left);
     } else {
-        rotVel_left = setPt;
+        rotVel_left = setPt + -(P * e_left + D * diffE_left) + angleCoef * (angleMin_left);
     }
 
     double rotVel_right = 0;
@@ -107,6 +107,9 @@ void publishMessage(double diffE_right, double diffE_left, double distMin_left, 
 
     if(rotVel < maxLeftSpd){
         rotVel = maxLeftSpd;
+    }
+    if(!std::isfinite(e_left) && !std::isfinite(e_right)){
+        rotVel = setPt;
     }
 
     msg.angular.z = rotVel;
@@ -170,7 +173,9 @@ void messageCallback(const sensor_msgs::LaserScan msg)
     }
 
     //Calculation of angles from indexes and storing data to class variables.
-    double angleMin_left = (size-minIndex_left)*msg.angle_increment;
+    double angleDiff_left = (size-minIndex_left)*msg.angle_increment - angleMin_left;
+
+    angleMin_left = (size-minIndex_left)*msg.angle_increment;
     double angleMin_right = (minIndex_right)*msg.angle_increment;
     double angleMin_middle = (size*3/4-minIndex_middle)*msg.angle_increment;
 
@@ -193,6 +198,7 @@ void messageCallback(const sensor_msgs::LaserScan msg)
     ROS_INFO( "   angleMin_right= %f", angleMin_right);
     ROS_INFO("dist_middle= %f", distMin_middle);
     ROS_INFO( "   angleMin_middle= %f", angleMin_middle);
+    ROS_INFO("angleDiff_left= %f", angleDiff_left);
 
     /*std::vector<float> xVals(size);
     std::vector<float> yVals(size);
@@ -206,7 +212,7 @@ void messageCallback(const sensor_msgs::LaserScan msg)
     }*/
 
     //Invoking method for publishing message
-    publishMessage(diffE_right, diffE_left, distMin_left, distMin_middle, angleMin_right, angleMin_left, angleMin_middle);
+    publishMessage(diffE_right, diffE_left, distMin_left, distMin_middle, angleMin_right, angleMin_middle, angleDiff_left);
 }
 
 void setP(const std_msgs::Float32::ConstPtr& msg){
