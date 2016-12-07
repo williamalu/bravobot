@@ -24,7 +24,7 @@
 ros::Publisher pubMessage;
 double e_left = 0;
 double e_right = 0;
-float setPt = -0.1;
+float setPt = -0.05;
 float wallDist = 1.0;
 float P = 0.75;
 float D = 0.25;
@@ -36,8 +36,6 @@ float angleCoef = 1;
 float midCoef = 0.05;
 float maxLeftSpd = -0.50;
 //int lookAhead = 50;
-
-float rotVel_left = 0;
 
 /*float calcStdDev(std::vector<float> vals) {
     //Calculate mean
@@ -80,6 +78,7 @@ void publishMessage(double diffE_right, double diffE_left, double distMin_left, 
     ROS_INFO("yDev= %f", yDev);*/
 
     //Determine direction
+    double rotVel_left = 0;
 
     if(distMin_left > wallDist || distMin_left < minWallDist){
         rotVel_left = setPt + -(P*e_left + D*diffE_left) + angleCoef * (angleMin_left);
