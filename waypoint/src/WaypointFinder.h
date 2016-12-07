@@ -20,9 +20,10 @@ public:
 	void FindWaypoint(const std_msgs::Float64MultiArray::ConstPtr &msg);
 
 	void GPSCallback(const sensor_msgs::NavSatFix &msg);
-	void WaypointList(const sensor_msgs::NavSatFix &msg);
-
 	void IMUCallback(const geometry_msgs::Vector3Stamped::ConstPtr &msg);
+
+	int Dist2WP(float, float);
+	void FindHeading(float, float, int);
 
 
 public:	
@@ -60,12 +61,10 @@ public:
 	float headingy;
 	float headingz;
 
-	float waypointx;
-	float waypointy;
-	float setpointx;
-	float setpointy;
-	float dremainx;
-	float dremainy;
+	float waypointLat;
+	float waypointLong;
+	float dremainLat;
+	float dremainLong;
 	// float waypoints [5];
 
 	int arbArray [7];
