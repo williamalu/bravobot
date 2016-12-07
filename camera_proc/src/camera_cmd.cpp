@@ -12,9 +12,9 @@ ros::Publisher pub;
 
 //camera screen is 640 * 480
 void messageCallback(const std_msgs::Int16MultiArray input){
-    std::vector<int> left;
-    std::vector<int> right;
-    std::vector<int> center;
+    std::vector<float> left;
+    std::vector<float> right;
+    std::vector<float> center;
     geometry_msgs::Twist msg;
     msg.linear.x = 0;
 
@@ -26,7 +26,8 @@ void messageCallback(const std_msgs::Int16MultiArray input){
         if (centerx < 260){
             left.push_back(x+width);
         }else if (centerx>=260 && centerx <= 380){
-            center.push_back(x, x+width); //center always have left most and right most
+            center.push_back(x); //center always have left most and right most
+            center.push_back(x+width);
         }else if (centerx> 380){
             right.push_back(x);
         }
