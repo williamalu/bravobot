@@ -16,18 +16,22 @@ public:
 
 	void init(int argc, char* argv[]);
 
+	void InputCallback(const std_msgs::Float64MultiArray::ConstPtr &msg);
 	void FindWaypoint(const std_msgs::Float64MultiArray::ConstPtr &msg);
-	void WaypointList();
+
+	void GPSCallback(const sensor_msgs::NavSatFix &msg);
+	void WaypointList(const sensor_msgs::NavSatFix &msg);
 
 	void IMUCallback(const geometry_msgs::Vector3Stamped::ConstPtr &msg);
-	void GPSCallback(const sensor_msgs::NavSatFix &msg);
-	void InputCallback(const std_msgs::Float64MultiArray::ConstPtr &msg);
 
 
 public:	
 	ros::NodeHandle nh;
 	ros::Subscriber subGPS;
+	ros::Subscriber subWPlist;
+
 	ros::Subscriber subIMU;
+
 	ros::Subscriber subInput;
 	ros::Subscriber subWPfinder;
 
@@ -38,10 +42,19 @@ public:
 	int count;
 	int counter;
 	int i;
+
+	float R;
 	
 	//current state
 	float currentLat;
 	float currentLong;
+	float wpLat;
+	float wpLong;
+	float dLat;
+	float dLong;
+	float a;
+	float calc;
+	float arcDist;
 
 	float headingx;
 	float headingy;

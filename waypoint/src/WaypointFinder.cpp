@@ -1,3 +1,6 @@
+// Olin College Fundamentals of Robotics 2016
+// Last edited by Lydia Z. 12/7/16
+
 #include "WaypointFinder.h"
 #include <cmath>
 
@@ -116,14 +119,36 @@ void WaypointFinder::IMUCallback(const geometry_msgs::Vector3Stamped::ConstPtr &
 	headingz = msg->vector.z;
 }
 
-void WaypointFinder::WaypointList(){
-	//COMPLETELY UNTESTED, FIRST DRAFT IN PROGRESS
+void WaypointFinder::WaypointList(const sensor_msgs::NavSatFix &msg){
+	//FIRST DRAFT IN PROGRESS
+
 	int waypoints [5] = { (0,0),(0,0),(0,0),(0,0),(0,0) }; // The current queue of waypoints
 
+	R = 6371; //Radius of the earth in km
+
+	currentLat = msg.latitude;
+	currentLong = msg.longitude;
+
+	dLong = currentLong - wpLong;
+    dLat = currentLat - wpLat;
+
+	//Haversine formula- calculate arc distance between two GPS points
+	a = std::pow(std::sin(dLat/2),2) + std::cos(wpLat) * std::cos(currentLat) * std::pow(sin(dLong/2),2);
+	calc = 2 * (std::atan2(std::sqrt(a), std::sqrt(1-a)));
+	arcDist = R * calc;
+
+
+	std::cout << "Latitude" << currentLat << std::endl;
+
+	// if (currentLat == )
+
 	if (waypointFound == true){ //If a waypoint was found...
+		std::cout << "Next WP" << std::endl;
 		waypoints[currwp] = (0,0); //Set the current waypoint to default value, clearing it off the list.
 		counter = 1; //Reset previous heading weights in arbiter array (arbArray) to 0
 		waypointFound = false;
+		direction.str(std::string());
+		direction.clear();
 	}
 	else{
 		for ( i=0; i <= 4; i++ ) {
@@ -150,10 +175,12 @@ void WaypointFinder::init(int argc, char* argv[]){
 	// ros::Publisher wp_pub = n.advertise<std_msgs::String>("wplist", 1000);
 
 	// subInput = nh.subscribe("/wplist", 10, &WaypointFinder::InputCallback, this); //You cannot run subInput and subWPfinder at the same time.
-	subGPS = nh.subscribe("/fix", 10, &WaypointFinder::GPSCallback, this);
-	subIMU = nh.subscribe("/imu/mag", 10, &WaypointFinder::IMUCallback, this);
-
 	subWPfinder = nh.subscribe("/wplist", 10, &WaypointFinder::FindWaypoint, this);
+
+	// subGPS = nh.subscribe("/fix", 10, &WaypointFinder::GPSCallback, this);
+	subWPlist = nh.subscribe("/fix", 10, &WaypointFinder::WaypointList, this);
+
+	subIMU = nh.subscribe("/imu/mag", 10, &WaypointFinder::IMUCallback, this);
 
 	pubvel = nh.advertise<std_msgs::String>("velocity", 1000);
 	pubwp = nh.advertise<std_msgs::Float64MultiArray>("wplist", 1000);
