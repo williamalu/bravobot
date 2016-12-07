@@ -26,12 +26,12 @@ double e_left = 0;
 double e_right = 0;
 float setPt = -0.05;
 float wallDist = 1.25;
-float P = .5;
-float D = 0.25;
+float P = .25;
+float D = 0.125;
 float minSpd = 0.30;
-float maxSpd = 0.65;
+float maxSpd = 1.0;
 float minObstDist= 0.10;
-float minWallDist = 0.875;
+float minWallDist = 0.75;
 float angleCoef = 1;
 float midCoef = 0.05;
 //int lookAhead = 50;
@@ -66,7 +66,7 @@ float rotVel_left = 0;
 }*/
 
 //Publisher
-void publishMessage(double diffE_right, double diffE_left, double distMin_middle, double angleMin_right, double angleMin_left, double angleMin_middle)
+void publishMessage(double diffE_right, double diffE_left, double distMin_left, double distMin_middle, double angleMin_right, double angleMin_left, double angleMin_middle)
 {
     //preparing message
     geometry_msgs::Twist msg;
@@ -80,9 +80,9 @@ void publishMessage(double diffE_right, double diffE_left, double distMin_middle
 
     //Determine direction
 
-    if(e_left > wallDist || e_left < minWallDist){
+    if(distMin_left > wallDist || distMin_left < minWallDist){
         rotVel_left = setPt + -(P*e_left + D*diffE_left) + angleCoef * (angleMin_left);
-    } else if(e_left < wallDist && e_left > minWallDist){
+    } else if(distMin_left < wallDist && distMin_left > minWallDist){
         rotVel_left = setPt;
     } else {
         rotVel_left = setPt;
@@ -199,7 +199,7 @@ void messageCallback(const sensor_msgs::LaserScan msg)
     }*/
 
     //Invoking method for publishing message
-    publishMessage(diffE_right, diffE_left, distMin_middle, angleMin_right, angleMin_left, angleMin_middle);
+    publishMessage(diffE_right, diffE_left, distMin_left, distMin_middle, angleMin_right, angleMin_left, angleMin_middle);
 }
 
 void setP(const std_msgs::Float32::ConstPtr& msg){
