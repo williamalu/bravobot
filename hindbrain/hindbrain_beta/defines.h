@@ -4,7 +4,7 @@
 #define MOTOR_MULTIPLIER -66.0
 #define MOTOR_STOP 90
 
-#define ROS_PUBLISH_INTERVAL 200
+#define ROS_PUBLISH_INTERVAL 500
 
 #define START_MODE 0
 #define OK_MODE 1
