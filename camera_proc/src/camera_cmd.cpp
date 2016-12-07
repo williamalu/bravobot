@@ -23,12 +23,12 @@ void messageCallback(const std_msgs::Int16MultiArray input){
         float width = input.data[i+2];
         float centerx = x + width/2;
 
-        if (centerx < 260){
+        if (centerx < 200){
             left.push_back(x+width);
-        }else if (centerx>=260 && centerx <= 380){
+        }else if (centerx>=200 && centerx <= 440){
             center.push_back(x); //center always have left most and right most
             center.push_back(x+width);
-        }else if (centerx> 380){
+        }else if (centerx> 440){
             right.push_back(x);
         }
 

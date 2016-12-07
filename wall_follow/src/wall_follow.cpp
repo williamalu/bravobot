@@ -24,16 +24,17 @@
 ros::Publisher pubMessage;
 double e_left = 0;
 double e_right = 0;
-float setPt = -0.05;
-float wallDist = 1.25;
-float P = .25;
-float D = 0.125;
+float setPt = -0.1;
+float wallDist = 1.0;
+float P = 0.75;
+float D = 0.25;
 float minSpd = 0.30;
 float maxSpd = 1.0;
 float minObstDist= 0.10;
 float minWallDist = 0.75;
 float angleCoef = 1;
 float midCoef = 0.05;
+float maxLeftSpd = -0.50;
 //int lookAhead = 50;
 
 float rotVel_left = 0;
@@ -104,19 +105,26 @@ void publishMessage(double diffE_right, double diffE_left, double distMin_left, 
     ROS_INFO("rotVel_middle= %f", rotVel_middle);
 
     double rotVel = rotVel_left + rotVel_right + rotVel_middle;
+
+    if(rotVel < maxLeftSpd){
+        rotVel = maxLeftSpd;
+    }
+
     msg.angular.z = rotVel;
 
     //Map speed based on angular velocity
     if(rotVel < 0){
 	    msg.linear.x = maxSpd;
-    } else {
+    } else if(rotVel == setPt){
+        msg.linear.x = maxSpd;
+    } else{
         msg.linear.x = maxSpd - (maxSpd - minSpd) * (fabs(rotVel - setPt));
     }
  
     //publishing message
     pubMessage.publish(msg);
     
-    ROS_INFO("PARAMETER VALUES: %f %f %f %f %f %f %f %f %f", P, D, minSpd, maxSpd, setPt, wallDist, minObstDist, angleCoef, midCoef);
+    ROS_INFO("PARAMETER VALUES: %f %f %f %f %f %f %f %f %f %f", P, D, minSpd, maxSpd, setPt, maxLeftSpd, wallDist, minObstDist, angleCoef, midCoef);
 
     /*if(!ros::ok()){
         ROS_INFO("P = %f", P);
@@ -247,6 +255,10 @@ void setMidCoef(const std_msgs::Float32::ConstPtr& msg){
     ROS_INFO("MID_COEF CHANGED.");
 }
 
+void setMaxLeftSpd(const std_msgs::Float32::ConstPtr& msg){
+    maxLeftSpd = msg->data;
+    ROS_INFO("MAX_LEFT_SPEED CHANGED.");
+}
 
 int main(int argc, char **argv)
 {
@@ -268,6 +280,7 @@ int main(int argc, char **argv)
     ros::Subscriber minDistSub = n.subscribe("wall_follow/minObstDist", 1, setMinObstDist);
     ros::Subscriber angleCoefSub = n.subscribe("wall_follow/angleCoef", 1, setAngleCoef);
     ros::Subscriber midCoefSub = n.subscribe("wall_follow/midCoef", 1, setMidCoef);
+    ros::Subscriber maxLeftSpdSub = n.subscribe("wall_follow/maxLeftSpd", 1, setMaxLeftSpd);
     ros::spin();
     
     return 0;
