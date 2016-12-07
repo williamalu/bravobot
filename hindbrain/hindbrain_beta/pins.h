@@ -1,5 +1,5 @@
-#define PORT_MOTORS 10
-#define STARBOARD_MOTORS 11
+#define PORT_MOTORS 12
+#define STARBOARD_MOTORS 13
 
 #define LED_RING_PORT 38
 #define LED_RING_STARBOARD 39
@@ -13,3 +13,5 @@
 #define IR_BACK_STARBOARD A3
 
 #define PHYSICAL_ESTOP A4
+
+

@@ -17,11 +17,11 @@ void cmdvel_cb( const geometry_msgs::Twist& msg){
 void enable_cb( const std_msgs::Bool& msg){
   if(msg.data == true) {
     ROSReady = true;
-    nh.loginfo("Received: ROS READY");
+    //nh.loginfo("Received: ROS READY");
   }
   else{
     ROSReady = false;
-    nh.loginfo("Received: ROS NOT READY");
+    //nh.loginfo("Received: ROS NOT READY");
   }
 }
 

@@ -15,11 +15,13 @@ ros::Publisher pub_starboardspeed("motor/starboard", &starboardspeed_msg);
 std_msgs::String state_msg;
 ros::Publisher pub_state("hind/state", &state_msg);
 
-boolean ROSReady = false;
+volatile boolean ROSReady = false;
 
 //Motors
 Adafruit_TiCoServo port_motors;
 Adafruit_TiCoServo starboard_motors;
+//Servo port_motors;
+//Servo starboard_motors;
 //Speeds that the midbrain wants the motors to go
 int port_speed_commanded = MOTOR_STOP; // range from 24 to 156
 int starboard_speed_commanded = MOTOR_STOP; // range from 24 to 156
@@ -42,6 +44,10 @@ uint32_t red   = led_ring_port.Color(50, 0, 0, 0);
 uint32_t white = led_ring_port.Color(0, 0, 0, 50);
 uint32_t off   = led_ring_port.Color(0, 0, 0, 0);
 boolean blinkState = true;
+
+//IR
+int IR_PINS[] = {IR_FRONT_PORT, IR_FRONT_STARBOARD, IR_BACK_PORT, IR_BACK_STARBOARD};
+int IR_Val[] = {0, 0, 0, 0};
 
 
 
