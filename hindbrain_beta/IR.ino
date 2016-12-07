@@ -6,18 +6,23 @@ void setupIR() {
 }
 
 boolean is_IR_ok() {  
-//  for(int i=0; i<4; i++){
-//    if(getRange(IR_PINS[i]) < 50.0) return false;
-//  }
-//  return true;
-  return true;
-}
+  IR_Val[0] = analogRead(IR_PINS[0]) / 4;
+  IR_Val[1] = analogRead(IR_PINS[1]) / 4;
 
-float getRange(int pin){
-    int sample;
-    sample = analogRead(pin)/4;
-    if(sample < 10) //if reading too low, we are far from anything
-        return 254;    
-    sample= 1309/(sample-3); //get cm
-    return (sample - 1)/100; //convert to meters
+  if (IR_Val[0] > 160 || IR_Val[1] > 160 || IR_Val[0] < 130 || IR_Val[1] < 130) {
+    IR_range_exceed_count++;
+  }
+
+  if (IR_range_exceed_count > 2) {
+    return false;
+    IR_range_exceed_count = 0;
+    last_IR_range_exceed = millis();
+  }
+
+  if (millis() - last_IR_range_exceed >= 100) {
+    last_IR_range_exceed = millis();
+    IR_range_exceed_count = 0;
+  }
+  
+  return true;
 }

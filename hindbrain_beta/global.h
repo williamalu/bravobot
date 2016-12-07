@@ -33,6 +33,7 @@ int starboard_speed_actual = MOTOR_STOP; // range from 24 to 156
 long lastPublishTime = 0;
 uint32_t last_increment_time = 0;
 uint32_t last_LED_refresh = 0;
+uint32_t last_IR_range_exceed = 0;
 uint8_t mode;
 
 //Neopixels
@@ -48,7 +49,4 @@ boolean blinkState = true;
 //IR
 int IR_PINS[] = {IR_FRONT_PORT, IR_FRONT_STARBOARD, IR_BACK_PORT, IR_BACK_STARBOARD};
 int IR_Val[] = {0, 0, 0, 0};
-
-
-
-
+int IR_range_exceed_count = 0;
