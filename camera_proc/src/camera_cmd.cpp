@@ -16,16 +16,16 @@ void messageCallback(const std_msgs::Int16MultiArray input){
     std::vector<float> right;
     std::vector<float> center;
     geometry_msgs::Twist msg;
-    msg.linear.x = 0;
+    msg.linear.x = 0.3;
 
     for (int i = 0; i<input.data.size(); i+=4){
         float x = input.data[i];
         float width = input.data[i+2];
         float centerx = x + width/2;
 
-        if (centerx < 200){
+        if (centerx < 100){
             left.push_back(x+width);
-        }else if (centerx>=200 && centerx <= 440){
+        }else if (centerx>=250 && centerx <= 380){
             center.push_back(x); //center always have left most and right most
             center.push_back(x+width);
         }else if (centerx> 440){
@@ -40,11 +40,11 @@ void messageCallback(const std_msgs::Int16MultiArray input){
         pub.publish(msg);
         std::cout << "I'm going straight, but there might be obstacles beside me" << std::endl;
     }else if (left.size() > 0 && center.size() > 0 && right.size() == 0){
-        msg.angular.z = 1.0;
+        msg.angular.z = .5;
         pub.publish(msg);
         std::cout << "I'm turning right" << std::endl;
     }else if (right.size()>0 && center.size()> 0 && left.size() == 0){
-        msg.angular.z = -1.0;
+        msg.angular.z = -.5;
         pub.publish(msg);
         std::cout << "I'm turning left" <<std::endl;
     }else{ //if there's obstacles everywhere, just try going straight, and scream on the inside
@@ -61,6 +61,6 @@ int main(int argc, char **argv) {
 
     ros::Subscriber sub = nh.subscribe("obstacle_positions", 10, messageCallback);
 
-    pub = nh.advertise<geometry_msgs::Twist>("cmr/cam_cmd_vel", 1000);
+    pub = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
     ros::spin();
 }

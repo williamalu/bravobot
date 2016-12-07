@@ -23,13 +23,13 @@ ros::Publisher pubMessage;
 double e_left = 0;
 double e_right = 0;
 float setPt = -0.05;
-float wallDist = 1.5;
+float wallDist = 1.25;
 float P = 1;
 float D = 0.5;
 float minSpd = 0.30;
 float maxSpd = 0.65;
 float minObstDist= 0.10;
-float angleCoef = 0.75;
+float angleCoef = 1;
 
 //Publisher
 void publishMessage(double diffE_right, double diffE_left, double angleMin_right, double angleMin_left)
@@ -39,7 +39,7 @@ void publishMessage(double diffE_right, double diffE_left, double angleMin_right
 
     double rotVel_left = setPt + -(P*e_left + D*diffE_left) + angleCoef * (angleMin_left);    //PD controller
 
-    if(e_left > 2.5 || !std::isfinite(e_left)){
+    if(e_left > 2 || !std::isfinite(e_left)){
         rotVel_left = setPt;
     }
 
