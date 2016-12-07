@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
 
     ros::NodeHandle nh;
 
-    ros::Subscriber sub = n.subscribe("obstacle_positions", 10, messageCallback);
+    ros::Subscriber sub = nh.subscribe("obstacle_positions", 10, messageCallback);
 
     pub = nh.advertise<geometry_msgs::Twist>("cmr/cmd_vel", 1000);
     ros::spin();
