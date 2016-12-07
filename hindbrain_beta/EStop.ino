@@ -3,6 +3,8 @@ void setupEStop() {
 }
 
 boolean is_EStop_ok() {
+  if (analogRead(PHYSICAL_ESTOP) > 1000) {
+    return false;
+  }
   return true;
 }
-
