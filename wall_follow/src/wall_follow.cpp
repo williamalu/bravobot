@@ -1,10 +1,12 @@
 #include <math.h>
+#include "cmath"
 #include "geometry_msgs/Twist.h"
 #include "ros/ros.h"
 #include "sensor_msgs/LaserScan.h"
 #include "std_msgs/Float32.h"
+#include "vector"
 
-#define PI 3.141592
+//#define PI 3.141592
 
 #define SUBSCRIBER_BUFFER_SIZE 1  // Size of buffer for subscriber.
 #define PUBLISHER_BUFFER_SIZE 1000  // Size of buffer for publisher.
@@ -18,6 +20,7 @@
 // #define SUBSCRIBER_TOPIC "/syros/laser_laser"
 #define SUBSCRIBER_TOPIC "/scan"
 
+//Define global variables
 ros::Publisher pubMessage;
 double e_left = 0;
 double e_right = 0;
@@ -30,6 +33,34 @@ float maxSpd = 0.65;
 float minObstDist= 0.10;
 float angleCoef = 1;
 float midCoef = 0.05;
+int lookAhead = 50;
+
+/*float calcStdDev(std::vector<float> vals) {
+    //Calculate mean
+    float sum = 0;
+    int numElem = vals.size();
+
+    for (int i = 0; i < vals.size(); ++i) {
+        if(std::isfinite(vals[i])) {
+            sum += vals[i];
+        } else {
+            numElem--;
+        }
+    }
+
+    float mean = (sum / numElem);
+
+    //Calculate standard deviation
+    double temp = 0;
+
+    for(int i = 0; i < vals.size(); ++i) {
+        if(std::isfinite(vals[i])) {
+            temp += (vals[i] - mean) * (vals[i] - mean) ;
+        }
+    }
+
+    return sqrtf(fabsf(temp / numElem));
+}*/
 
 //Publisher
 void publishMessage(double diffE_right, double diffE_left, double distMin_middle, double angleMin_right, double angleMin_left, double angleMin_middle)
@@ -37,6 +68,22 @@ void publishMessage(double diffE_right, double diffE_left, double distMin_middle
     //preparing message
     geometry_msgs::Twist msg;
 
+    /*//Determine type for left portion
+    std::vector<float> xVals(lookAhead);
+    std::vector<float> yVals(lookAhead);
+
+    for(int i = 1; i < dists.size(); ++i){
+        xVals[i] = dists[i]*cosf(angles[i]);
+        yVals[i] = dists[i]*sinf(angles[i]);
+    }
+
+    float xDev = calcStdDev(xVals);
+    float yDev = calcStdDev(yVals);
+
+    ROS_INFO("xDev= %f", xDev);
+    ROS_INFO("yDev= %f", yDev);*/
+
+    //Determine direction
     double rotVel_left = setPt + -(P*e_left + D*diffE_left) + angleCoef * (angleMin_left);    //PD controller
 
     double rotVel_right = 0;
@@ -57,6 +104,7 @@ void publishMessage(double diffE_right, double diffE_left, double distMin_middle
     double rotVel = rotVel_left + rotVel_right + rotVel_middle;
     msg.angular.z = rotVel;
 
+    //Map speed based on angular velocity
     if(rotVel < 0){
 	    msg.linear.x = maxSpd;
     } else {
@@ -105,17 +153,12 @@ void messageCallback(const sensor_msgs::LaserScan msg)
             minIndex_middle = i;
         }
     }
-
-    int size_adj = size - 50;
-
-    for(int i = two_thirds; i < size_adj; i++)
+    for(int i = two_thirds; i < (size-50); i++)
     {
         if (msg.ranges[i] < msg.ranges[minIndex_left] && msg.ranges[i] > minObstDist){
             minIndex_left = i;
         }
     }
-
-    ROS_INFO("%i %i", size_adj, minIndex_left);
 
     //Calculation of angles from indexes and storing data to class variables.
     double angleMin_left = (size-minIndex_left)*msg.angle_increment;
@@ -142,6 +185,13 @@ void messageCallback(const sensor_msgs::LaserScan msg)
     ROS_INFO("dist_middle= %f", distMin_middle);
     ROS_INFO( "   angleMin_middle= %f", angleMin_middle);
 
+    std::vector<float> minDists(lookAhead);
+    std::vector<float> minAngles(lookAhead);
+
+    for(int i = 0; i < minDists.size(); ++i) {
+        minDists[i] = msg.ranges[minIndex_left - i];
+        minAngles[i] = (size-minIndex_left-i)*msg.angle_increment;
+    }
 
     //Invoking method for publishing message
     publishMessage(diffE_right, diffE_left, distMin_middle, angleMin_right, angleMin_left, angleMin_middle);
