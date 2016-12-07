@@ -9,28 +9,39 @@ INPUTS = ['wpt', 'obst']
 
 class Arbiter(object):
 	def __init__(self):	
-		self.x = 0
-		self.z = 0
+		self.lidx = 0
+		self.lidz = 0
+		self.cmrx = "N/A"
+		self.cmrz = "N/A"
+		self.irx = 0
+		self.irz = 0
 		rospy.init_node('arbiter')
 		rospy.Subscriber('lidar/cmd_vel', Twist, self.lidar_cmd_vel)
-		rospy.Subscriber('cmr/cmd_vel', Twist, self.cmr_cmd_vel)
+		rospy.Subscriber('cmr/cam_cmd_vel', Twist, self.cmr_cmd_vel)
 		rospy.Subscriber('ir/cmd_vel', Twist, self.ir_cmd_vel)
 		self.cmd_vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
 
 	def lidar_cmd_vel_cb(self, msg):
-		self.x += msg.linear.x
-		self.z += msg.linear.z
+		self.lidx = msg.linear.x
+		self.lidz = msg.linear.z
 	def cmr_cmd_vel_cb(self, msg): #camera command velocity
-		self.x += msg.linear.x
-		self.z += msg.linear.z
+		self.cmrx = msg.linear.x
+		self.cmrz = msg.linear.z
 	def ir_cmd_vel(self, msg):
-		self.x += msg.linear.x
-		self.z += msg.linear.z
+		self.irx = msg.linear.x
+		self.irz = msg.linear.z
 
 	def run(self):
 		msg = Twist()
-		msg.linear.x = self.x
-		msg.angular.z = self.z
+		if (self.cmrx!= "N/A" and self.cmrz != "N/A"):
+			msg.linear.x = self.cmrx
+			msg.linear.z = self.cmrz
+			self.cmrx = "N/A" #after reading the camera cmds, set it to null so if it dosn't publish on the next run, follow lidar cmds
+			self.cmrz = "N/A"
+		else:
+			msg.linear.x = self.lidx
+			msg.linear.z = self.lidz
+
 		self.cmd_vel_pub.publish(msg)
 
 if __name__ == '__main__':
