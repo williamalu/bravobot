@@ -86,7 +86,7 @@ void callback(const sensor_msgs::ImageConstPtr& original_image)
             obst_pos.push_back(curr_obst.y);
             obst_pos.push_back(curr_obst.width);
             obst_pos.push_back(curr_obst.height);
-            // Label cones with text
+            // Label obstacles with text
             cv::putText(cv_ptr->image, "Obstacle", curr_obst.tl(), \
 		    cv::FONT_HERSHEY_PLAIN, 1.0, CV_RGB(0, 0, 255), 1.0);
         }
