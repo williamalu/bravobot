@@ -16,8 +16,6 @@ static const std::string raw_window = "Raw";
 static const std::string filtered_window = "Filtered";
 static const std::string contoured_window = "Contoured";
 
-image_transport::Publisher pub;
-
 // Define initial filter parameters
 int blur = 20;
 int lowerH = 0;
@@ -92,7 +90,7 @@ void callback(const sensor_msgs::ImageConstPtr& original_image)
     cv::waitKey(3);
 
     // Convert from OpenCV image to ROS image message and publish
-    pub.publish(cv_ptr->toImageMsg());
+    // pub.publish(cv_ptr->toImageMsg());
 }
 
 int main(int argc, char **argv)
