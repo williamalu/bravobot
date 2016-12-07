@@ -139,6 +139,7 @@ add_executable(color_track_purple src/color_track_purple.cpp)
 add_executable(color_track_red src/color_track_red.cpp)
 add_executable(color_proc src/color_proc.cpp)
 add_executable(obst_detect src/obst_detect.cpp)
+add_executable(camera_cmd src/camera_cmd.cpp)
 
 
 ## Add cmake target dependencies of the executable
@@ -163,6 +164,9 @@ target_link_libraries(color_proc
         )
 
 target_link_libraries(obst_detect
+        ${catkin_LIBRARIES}
+        )
+target_link_libraries(camera_cmd
         ${catkin_LIBRARIES}
         )
 

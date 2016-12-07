@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import rospy
-from std_msgs.msg import Int8MultiArray
 from geometry_msgs.msg import Twist
 import numpy as np
 
@@ -12,21 +11,16 @@ class Arbiter(object):
 	def __init__(self):
 		
 		rospy.init_node('arbiter')
-
-		self.vel_array = np.zeros([len(INPUTS), ARRAY_SIZE])
-		self.vel_array[:,5] = .1
-		self.turn_array = np.zeros([len(INPUTS), ARRAY_SIZE])
-		self.turn_array[:,5] = .1
 		
-		rospy.Subscriber('wpt/cmd_vel', Int8MultiArray, self.wpt_cmd_vel_cb)
-		rospy.Subscriber('obst/cmd_vel', Int8MultiArray, self.obst_cmd_vel_cb)
+		rospy.Subscriber('lidar/cmd_vel', Twist, self.lidar_cmd_vel_cb)
+		rospy.Subscriber('cmr/cmd_vel', Twist, self.cmr_cmd_vel_cb)
 
 		self.cmd_vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
 
-	def wpt_cmd_vel_cb(self, msg):
+	def lidar_cmd_vel_cb(self, msg):
 		self.update_array(msg.data, INPUTS.index('wpt'))
 
-	def obst_cmd_vel_cb(self, msg):
+	def cmr_cmd_vel_cb(self, msg): #camera command velocity
 		print 'received msg'
 		self.update_array(msg.data, INPUTS.index('obst'))
 		print 'updated'
