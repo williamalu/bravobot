@@ -1,5 +1,7 @@
 # bravobot
-Code for an autonomous ground vehicle for ENGR3390 during FA2016.
+Code for an autonomous ground vehicle for ENGR3390 Fundementals of Robotics.
+
+*Olin College FA2016*
 
 # Team Members
 * [Trent Dye](https://github.com/trentdye)

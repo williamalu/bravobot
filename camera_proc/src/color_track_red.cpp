@@ -41,10 +41,10 @@ int thresh = 100;
 int max_thresh = 255;
 cv::RNG rng(12345);
 cv::Mat img_mask;
-cv::Mat grey_cnt;
+cv::Mat img_grey;
 cv::Mat hsv_cnt;
 
-cv::Mat img_hsv,canny_output,drawing;
+cv::Mat img_hsv,thresh_output,drawing;
 std::vector<cv::vector<cv::Point> > contours;
 std::vector<cv::Vec4i> hierarchy;
 
@@ -127,35 +127,95 @@ void imageCallback(const sensor_msgs::ImageConstPtr& original_image)
 }
 
 
+// /** @function thresh_callback */
+// void thresh_callback(int, void*)
+// {
+
+//   while (cv::countNonZero(::img_mask) < 1) 
+//   {
+//     std::cout << "No thresh" << std::endl;
+//     ros::spinOnce();
+//   }
+
+//   while (cv::countNonZero(::img_mask) > 1 && ros::ok()){
+//   // std::cout << "Boo" << std::endl;
+
+//   // // else
+//   // // {
+//   // // Detect edges using canny
+//   cv::cvtColor(::img_mask,grey_cnt,CV_GRAY2BGR);
+//   cv::cvtColor(grey_cnt,hsv_cnt,CV_BGR2HSV);
+//   cv::Canny(grey_cnt, canny_output, thresh, thresh*2, 3 );
+  
+//   // Find contours
+//   cv::findContours( canny_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
+//   // cv::cvtColor(contours,bgr_cnt,CV_BGR2GRAY);
+
+//   std::vector<cv::vector<cv::Point> > contours_poly( contours.size() );
+//   std::vector<cv::Point2f>center( contours.size() );
+//   std::vector<float>radius( contours.size() );
+
+//   drawing = cv::Mat( canny_output.size(), CV_8UC3);
+
+//   //UNCOMMENT AND FIX
+//   for( size_t i = 0; i < contours.size(); i++ )
+//   {
+//     // std::cout << contours.type() << std::endl;
+//     // cv::approxPolyDP( contours[i], contours_poly[i], 3, true );
+//     cv::minEnclosingCircle( contours[i], center[i], radius[i] );
+//     // cv::circle( drawing, center[i], radius[i], cv::Scalar( 255, 255, 255 ), -1, 8, 0 );
+//   }
+
+//   /// Show in a window
+//   // cv::namedWindow( "Contours", CV_WINDOW_AUTOSIZE );
+//   cv::imshow( "Contours", drawing );
+//   cv::waitKey(3);
+
+//   // if (key == ord("q")){
+//   // cv::destroyWindow( "Contours");
+//   // break
+//   // }
+//   // }
+//   ros::spinOnce();
+//   }
+// }
+
 /** @function thresh_callback */
-void thresh_callback(int, void*)
+void thresh_callback(const sensor_msgs::ImageConstPtr& original_image)
 {
+  //Convert from the ROS image message to a CvImage suitable for working with OpenCV for processing
+    cv_bridge::CvImagePtr cv_ptr;
+    try
+    {
+        //Always copy, returning a mutable CvImage
+        //OpenCV expects color images to use BGR channel order.
+        cv_ptr = cv_bridge::toCvCopy(original_image, enc::BGR8);
+    }
+    catch (cv_bridge::Exception& e)
+    {
+        //if there is an error during conversion, display it
+        ROS_ERROR("tutorialROSOpenCV::main.cpp::cv_bridge exception: %s", e.what());
+        return;
+    }
 
-  while (cv::countNonZero(::img_mask) < 1) 
-  {
-    std::cout << "No thresh" << std::endl;
-    ros::spinOnce();
-  }
+  cv::cvtColor(cv_ptr->image,img_grey,CV_BGR2GRAY);
+  // cv::inRange(img_hsv,cv::Scalar(LowerH,LowerS,LowerV),cv::Scalar(UpperH,UpperS,UpperV),img_mask);
 
-  while (cv::countNonZero(::img_mask) > 1 && ros::ok()){
-  // std::cout << "Boo" << std::endl;
-
-  // // else
-  // // {
   // // Detect edges using canny
-  cv::cvtColor(::img_mask,grey_cnt,CV_GRAY2BGR);
-  cv::cvtColor(grey_cnt,hsv_cnt,CV_BGR2HSV);
-  cv::Canny(grey_cnt, canny_output, thresh, thresh*2, 3 );
+  // cv::cvtColor(img_mask,grey_cnt,CV_GRAY2BGR);
+  // cv::cvtColor(grey_cnt,hsv_cnt,CV_BGR2HSV);
+  // cv::Canny(img_hsv, canny_output, thresh, thresh*2, 3 );
+  cv::threshold( img_grey, thresh_output, thresh, 255, CV_THRESH_BINARY );
   
   // Find contours
-  cv::findContours( canny_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
+  cv::findContours( thresh_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0) );
   // cv::cvtColor(contours,bgr_cnt,CV_BGR2GRAY);
 
   std::vector<cv::vector<cv::Point> > contours_poly( contours.size() );
   std::vector<cv::Point2f>center( contours.size() );
   std::vector<float>radius( contours.size() );
 
-  drawing = cv::Mat( canny_output.size(), CV_8UC3);
+  drawing = cv::Mat( thresh_output.size(), CV_8UC3);
 
   //UNCOMMENT AND FIX
   for( size_t i = 0; i < contours.size(); i++ )
@@ -165,19 +225,9 @@ void thresh_callback(int, void*)
     cv::minEnclosingCircle( contours[i], center[i], radius[i] );
     // cv::circle( drawing, center[i], radius[i], cv::Scalar( 255, 255, 255 ), -1, 8, 0 );
   }
-
-  /// Show in a window
-  // cv::namedWindow( "Contours", CV_WINDOW_AUTOSIZE );
-  cv::imshow( "Contours", drawing );
+  cv::imshow( "Contours", thresh_output );
   cv::waitKey(3);
-
-  // if (key == ord("q")){
-  // cv::destroyWindow( "Contours");
-  // break
-  // }
-  // }
-  ros::spinOnce();
-  }
+  
 }
 
 int main(int argc, char **argv)
@@ -202,11 +252,11 @@ int main(int argc, char **argv)
     cv::namedWindow( "Contours", CV_WINDOW_AUTOSIZE );
 
     image_transport::Subscriber sub = it.subscribe("/image_raw", 1, colorDetectionCallback);
-
+    image_transport::Subscriber thresh = it.subscribe("/image_raw", 1, thresh_callback);
     // thresh_callback(0, 0 );
-    cv::createTrackbar("Canny thresh:","Ball", &thresh, 255,thresh_callback);
+    // cv::createTrackbar("Canny thresh:","Ball", &thresh, 255,thresh_callback);
 
-    thresh_callback(0,0);
+    // thresh_callback(0,0);
 
     //OpenCV HighGUI call to destroy a display window on shut-down.
     cv::destroyWindow(WINDOW);
