@@ -3,11 +3,14 @@
 
 
 void WaypointFinder::FindWaypoint(const std_msgs::Float64MultiArray::ConstPtr &msg){
+	std::cout << "I'm here!" << std::endl;
 
 	setpointx = msg->data[0];
 	setpointy = msg->data[1];
 
-	if(setpointx != NULL){
+	std::cout << "Setpoint: " << setpointx << std::endl;
+
+	try{
 
 		// if(counter <= 1){
 		// 	// //Generating test waypoints
@@ -83,7 +86,10 @@ void WaypointFinder::FindWaypoint(const std_msgs::Float64MultiArray::ConstPtr &m
 			arbArray[3] = 1;
 			arbArray[4] = 0.5;
 		}
-		std::cout << direction << std::endl;
+		std::cout << direction.str() << std::endl;
+	}
+	catch (...){
+		std::cout << "No setpoint" << std::endl;
 	}
 
 }
@@ -95,6 +101,8 @@ void WaypointFinder::InputCallback(const std_msgs::Float64MultiArray::ConstPtr &
 
 	waypointx = msg->data[0];
 	waypointy = msg->data[1];
+
+	std::cout << "Input Callback" << std::endl;
 }
 
 void WaypointFinder::GPSCallback(const sensor_msgs::NavSatFix &msg){
@@ -139,20 +147,20 @@ void WaypointFinder::init(int argc, char* argv[]){
 
 	int arbArray [7] = { 0,0,0,0,0,0,0 }; 
 
-	subInput = nh.subscribe("/wplist", 10, &WaypointFinder::InputCallback, this);
-	// subInput = nh.subscribe("/goto", 10, &WaypointFinder::InputCallback, this);
+	// ros::Publisher wp_pub = n.advertise<std_msgs::String>("wplist", 1000);
+
+	// subInput = nh.subscribe("/wplist", 10, &WaypointFinder::InputCallback, this); //You cannot run subInput and subWPfinder at the same time.
 	subGPS = nh.subscribe("/fix", 10, &WaypointFinder::GPSCallback, this);
 	subIMU = nh.subscribe("/imu/mag", 10, &WaypointFinder::IMUCallback, this);
 
 	subWPfinder = nh.subscribe("/wplist", 10, &WaypointFinder::FindWaypoint, this);
-	// subWPfinder = nh.subscribe("/goto", 10, &WaypointFinder::FindWaypoint, this);
 
 	pubvel = nh.advertise<std_msgs::String>("velocity", 1000);
 	pubwp = nh.advertise<std_msgs::Float64MultiArray>("wplist", 1000);
 
 	ros::Rate loop_rate(10);
 
-	int count = 0;
+	// int count = 0;
 	while (ros::ok())
   	{
 
@@ -176,7 +184,7 @@ void WaypointFinder::init(int argc, char* argv[]){
 	    now[5] = waypointx;
 	    now[6] = waypointy;*/
   		// direction << "Slight left";
-
+  		// wp_pub.publish("");
   		pubdirection.data = direction.str();
 	    pubvel.publish(pubdirection);
 
@@ -184,9 +192,9 @@ void WaypointFinder::init(int argc, char* argv[]){
 
 	    loop_rate.sleep();
 
-	    ++count;
-	    std::cout << count << "   " << direction.str() << "Hoi" << std::endl;
-	    // std::cout << count << "   " << pubdirection.data.c_str() << "Hoi" << std::endl;
+	    // ++count;
+	    std::cout << "   " << direction.str() << std::endl;
+	//     std::cout << count << "   " << pubdirection.data.c_str() << "Hoi" << std::endl;
 	}
 
 }
