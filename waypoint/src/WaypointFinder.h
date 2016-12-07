@@ -66,9 +66,12 @@ public:
 	float setpointy;
 	float dremainx;
 	float dremainy;
+	// float waypoints [5];
 
 	int arbArray [7];
-	int waypoints [7];
+
+	float waypointLats [5]; // The current queue of waypoint latitudes
+	float waypointLongs [5]; // The current queue of waypoint longitudes
 
 	std_msgs::String pubdirection;
 	std::stringstream direction;

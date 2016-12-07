@@ -1,9 +1,11 @@
 // Olin College Fundamentals of Robotics 2016
 // Last edited by Lydia Z. 12/7/16
+//
+// Currently compiling- waypointx and waypointy in WaypointFinder::FindWaypoint need to be integrated with WaypointFinder::WaypointList.
+// WaypointFinder::WaypointList needs to publish to rostopic /wplist
 
 #include "WaypointFinder.h"
 #include <cmath>
-
 
 void WaypointFinder::FindWaypoint(const std_msgs::Float64MultiArray::ConstPtr &msg){
 	std::cout << "I'm here!" << std::endl;
@@ -15,19 +17,6 @@ void WaypointFinder::FindWaypoint(const std_msgs::Float64MultiArray::ConstPtr &m
 
 	try{
 
-		// if(counter <= 1){
-		// 	// //Generating test waypoints
-		// 	// //Change to reasonable values.
-		// 	// waypointx = setpointx + 10;
-		// 	// waypointy = setpointy + 10;
-
-		// 	for ( i=0; i <= 6; i++ ) {
-		// 		//If waypoint has been reached, reset waypoint arbiter array to zero in preparation for finding the next waypoint.
-		// 		arbArray [i] = 0;
-		// 	}
-		// }
-
-			// counter++;
 
 		for ( i=0; i < 7; i++ ) {
 			arbArray [i] = 0;
@@ -120,31 +109,10 @@ void WaypointFinder::IMUCallback(const geometry_msgs::Vector3Stamped::ConstPtr &
 }
 
 void WaypointFinder::WaypointList(const sensor_msgs::NavSatFix &msg){
-	//FIRST DRAFT IN PROGRESS
-
-	int waypoints [5] = { (0,0),(0,0),(0,0),(0,0),(0,0) }; // The current queue of waypoints
-
-	R = 6371; //Radius of the earth in km
-
-	currentLat = msg.latitude;
-	currentLong = msg.longitude;
-
-	dLong = currentLong - wpLong;
-    dLat = currentLat - wpLat;
-
-	//Haversine formula- calculate arc distance between two GPS points
-	a = std::pow(std::sin(dLat/2),2) + std::cos(wpLat) * std::cos(currentLat) * std::pow(sin(dLong/2),2);
-	calc = 2 * (std::atan2(std::sqrt(a), std::sqrt(1-a)));
-	arcDist = R * calc;
-
-
-	std::cout << "Latitude" << currentLat << std::endl;
-
-	// if (currentLat == )
-
 	if (waypointFound == true){ //If a waypoint was found...
 		std::cout << "Next WP" << std::endl;
-		waypoints[currwp] = (0,0); //Set the current waypoint to default value, clearing it off the list.
+		waypointLats[currwp] = 0.00000; //Set the current waypoint latitude and longitude to default values, clearing them off the list.
+		waypointLongs[currwp] = 0.00000;
 		counter = 1; //Reset previous heading weights in arbiter array (arbArray) to 0
 		waypointFound = false;
 		direction.str(std::string());
@@ -154,10 +122,44 @@ void WaypointFinder::WaypointList(const sensor_msgs::NavSatFix &msg){
 		for ( i=0; i <= 4; i++ ) {
 			// For waypoint i in list waypoints, check if waypoint exists (default value is (0,0))
 			// Once a valid waypoint is found, set currwp (currentwaypoint) to waypoint i.
-			if (waypoints[i] != (0,0)){ //If waypoint i in waypoints exists, make it our current waypoint.
+			if ((waypointLats[i] == 0.00000) && (waypointLongs[i] == 0.00000)){
+				//Nothing happens
+			}
+			else{ //If waypoint i in waypoints exists, make it our current waypoint.
+				// std::cout << "Waypoint # set to: " << i << std::endl;
 				currwp = i;
+				break;
 			}
 		}
+	
+
+	std::cout << "Current waypoint is waypoint " << currwp << " at (" << waypointLats[currwp]<< ", " << waypointLongs[currwp] << ")" << std::endl;
+
+	R = 6371.00000; //Radius of the earth in km
+
+	currentLat = msg.latitude;
+	currentLong = msg.longitude;
+
+	wpLat = waypointLats[currwp];
+	wpLong = waypointLongs[currwp];
+
+    dLat = currentLat - wpLat;
+    dLong = currentLong - wpLong;
+
+	//Haversine formula- calculate arc distance between two GPS points
+	a = std::pow(std::sin(dLat/2),2) + std::cos(wpLat) * std::cos(currentLat) * std::pow(sin(dLong/2),2);
+	calc = 2 * (std::atan2(std::sqrt(a), std::sqrt(1-a)));
+	arcDist = R * calc;
+
+	if (arcDist <= 3.00000){
+		waypointFound == false;
+		std::cout << "Waypoint " << currwp << " found." << std::endl;
+	}
+
+	std::cout << "Distance remaining: " << arcDist << " km" << std::endl;
+
+	std::cout << "Current GPS: (" << currentLat << "N, " << currentLong << "W)" << std::endl;
+	std::cout << "Waypoint GPS: (" << currentLat << "N, " << currentLong << "W)" << std::endl;
 	}
 }
 
@@ -170,7 +172,19 @@ void WaypointFinder::init(int argc, char* argv[]){
 	waypointx = 0;
 	waypointy = 0;
 
-	int arbArray [7] = { 0,0,0,0,0,0,0 }; 
+	int arbArray [7] = { 0,0,0,0,0,0,0 };
+
+	waypointLats[0] = 20.00001;
+	waypointLats[1] = 20.00000;
+	waypointLats[2] = 20.00000;
+	waypointLats[3] = 20.00000;
+	waypointLats[4] = 20.00000;
+	
+	waypointLongs[0] = 0.00000;
+	waypointLongs[1] = 20.00000;
+	waypointLongs[2] = 20.00000;
+	waypointLongs[3] = 20.00000;
+	waypointLongs[4] = 20.00000;
 
 	// ros::Publisher wp_pub = n.advertise<std_msgs::String>("wplist", 1000);
 
@@ -220,7 +234,7 @@ void WaypointFinder::init(int argc, char* argv[]){
 	    loop_rate.sleep();
 
 	    // ++count;
-	    std::cout << "   " << direction.str() << std::endl;
+	    std::cout << direction.str() << std::endl;
 	//     std::cout << count << "   " << pubdirection.data.c_str() << "Hoi" << std::endl;
 	}
 
