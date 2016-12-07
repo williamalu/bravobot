@@ -28,9 +28,9 @@ void updateRampingSpeed(){
     char sMsg[8];  
     dtostrf(port_speed_actual, 6, 2, pMsg); //Converts floats (and ints) to char arrays, which are required by loginfo.
     dtostrf(starboard_speed_actual, 6, 2, sMsg);
-    nh.loginfo("Motor speed changed. New speed (port, starboard):");
-    nh.loginfo(pMsg);
-    nh.loginfo(sMsg);
+//    nh.loginfo("Motor speed changed. New speed (port, starboard):");
+//    nh.loginfo(pMsg);
+//    nh.loginfo(sMsg);
   }
 }
 //setMotorSpeed: Converts linar and angular speeds between -1 and 1 to Motor servo values from 24-90-156. These values are assigned to

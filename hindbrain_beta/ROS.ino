@@ -57,6 +57,6 @@ void publishAtInterval()
     pub_starboardspeed.publish( &starboardspeed_msg);
     pub_state.publish( &state_msg);
     //lastPublishTime = millis();
-    nh.loginfo("Published messages.");
+//    nh.loginfo("Published messages.");
 }
 
