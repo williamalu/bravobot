@@ -24,16 +24,19 @@
 ros::Publisher pubMessage;
 double e_left = 0;
 double e_right = 0;
-float setPt = 0;
+float setPt = -0.05;
 float wallDist = 1.25;
 float P = .5;
 float D = 0.25;
 float minSpd = 0.30;
 float maxSpd = 0.65;
 float minObstDist= 0.10;
+float minWallDist = 0.875;
 float angleCoef = 1;
 float midCoef = 0.05;
-int lookAhead = 50;
+//int lookAhead = 50;
+
+float rotVel_left = 0;
 
 /*float calcStdDev(std::vector<float> vals) {
     //Calculate mean
@@ -69,14 +72,6 @@ void publishMessage(double diffE_right, double diffE_left, double distMin_middle
     geometry_msgs::Twist msg;
 
     /*//Determine type for left portion
-    std::vector<float> xVals(lookAhead);
-    std::vector<float> yVals(lookAhead);
-
-    for(int i = 1; i < dists.size(); ++i){
-        xVals[i] = dists[i]*cosf(angles[i]);
-        yVals[i] = dists[i]*sinf(angles[i]);
-    }
-
     float xDev = calcStdDev(xVals);
     float yDev = calcStdDev(yVals);
 
@@ -84,7 +79,14 @@ void publishMessage(double diffE_right, double diffE_left, double distMin_middle
     ROS_INFO("yDev= %f", yDev);*/
 
     //Determine direction
-    double rotVel_left = setPt + -(P*e_left + D*diffE_left) + angleCoef * (angleMin_left);    //PD controller
+
+    if(e_left > wallDist || e_left < minWallDist){
+        rotVel_left = setPt + -(P*e_left + D*diffE_left) + angleCoef * (angleMin_left);
+    } else if(e_left < wallDist && e_left > minWallDist){
+        rotVel_left = setPt;
+    } else {
+        rotVel_left = setPt;
+    }
 
     double rotVel_right = 0;
     double rotVel_middle = 0;
@@ -185,13 +187,16 @@ void messageCallback(const sensor_msgs::LaserScan msg)
     ROS_INFO("dist_middle= %f", distMin_middle);
     ROS_INFO( "   angleMin_middle= %f", angleMin_middle);
 
-    std::vector<float> minDists(lookAhead);
-    std::vector<float> minAngles(lookAhead);
+    /*std::vector<float> xVals(size);
+    std::vector<float> yVals(size);
 
-    for(int i = 0; i < minDists.size(); ++i) {
-        minDists[i] = msg.ranges[minIndex_left - i];
-        minAngles[i] = (size-minIndex_left-i)*msg.angle_increment;
-    }
+    for(int i = 50; i < size-50; ++i) {
+        float dist = msg.ranges[minIndex_left - i];
+        float angle = (size-minIndex_left-i)*msg.angle_increment;
+
+        xVals[i] = dist*cosf(angle);
+        yVals[i] = dist*sinf(angle);
+    }*/
 
     //Invoking method for publishing message
     publishMessage(diffE_right, diffE_left, distMin_middle, angleMin_right, angleMin_left, angleMin_middle);
