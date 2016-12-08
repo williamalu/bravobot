@@ -22,17 +22,17 @@
 
 //Define global variables
 ros::Publisher pubMessage;
+ros::Publisher lidarPub;
 double e_left = 0;
 double e_right = 0;
-double angleMin_left = 0;
 float setPt = -0.05;
-float wallDist = 1.0;
-float P = 0.70;
-float D = 0.20;
+float wallDist = 1.5;
+float P = 0.50;
+float D = 0.25;
 float minSpd = 0.30;
 float maxSpd = 0.65;
 float minObstDist= 0.10;
-float minWallDist = 0.80;
+float blockDist = 0.80;
 float angleCoef = 1;
 float midCoef = 0.05;
 float maxLeftSpd = -0.35;
@@ -40,46 +40,16 @@ float angleJump = 0.17;
 float cornerTrackAngle = 0.02;
 //int lookAhead = 50;
 bool block = false;
-
-/*float calcStdDev(std::vector<float> vals) {
-    //Calculate mean
-    float sum = 0;
-    int numElem = vals.size();
-
-    for (int i = 0; i < vals.size(); ++i) {
-        if(std::isfinite(vals[i])) {
-            sum += vals[i];
-        } else {
-            numElem--;
-        }
-    }
-
-    float mean = (sum / numElem);
-
-    //Calculate standard deviation
-    double temp = 0;
-
-    for(int i = 0; i < vals.size(); ++i) {
-        if(std::isfinite(vals[i])) {
-            temp += (vals[i] - mean) * (vals[i] - mean) ;
-        }
-    }
-
-    return sqrtf(fabsf(temp / numElem));
-}*/
+float lastScan[512];
+int count = 0;
+float prevMinAngles[3] = {0.0, 0.0, 0.0};
+float prevWallDist = 0;
 
 //Publisher
-void publishMessage(double diffE_right, double diffE_left, double distMin_left, double distMin_middle, double angleMin_right, double angleMin_middle, double angleDiff)
+void publishMessage(double diffE_right, double diffE_left, double distMin_left, double distMin_middle, double angleMin_right, double angleMin_middle, double angleMin_left)
 {
     //preparing message
     geometry_msgs::Twist msg;
-
-    /*//Determine type for left portion
-    float xDev = calcStdDev(xVals);
-    float yDev = calcStdDev(yVals);
-
-    ROS_INFO("xDev= %f", xDev);
-    ROS_INFO("yDev= %f", yDev);*/
 
     //Determine direction
     double rotVel_left = 0;
@@ -128,7 +98,7 @@ void publishMessage(double diffE_right, double diffE_left, double distMin_left, 
     //publishing message
     pubMessage.publish(msg);
     
-    ROS_INFO("PARAMETER VALUES: %f %f %f %f %f %f %f %f %f %f %f %f %f", P, D, minSpd, maxSpd, setPt, maxLeftSpd, wallDist, minWallDist, minObstDist, angleJump, angleCoef, midCoef);
+    ROS_INFO("PARAMETER VALUES: %f %f %f %f %f %f %f %f %f %f %f %f %f", P, D, minSpd, maxSpd, setPt, maxLeftSpd, wallDist, blockDist, minObstDist, angleJump, angleCoef, midCoef);
 
     /*if(!ros::ok()){
         ROS_INFO("P = %f", P);
@@ -143,74 +113,142 @@ void publishMessage(double diffE_right, double diffE_left, double distMin_left, 
 }
 
 //Subscriber
-void messageCallback(const sensor_msgs::LaserScan msg)
+void messageCallback(sensor_msgs::LaserScan msg)
 {
     int size = msg.ranges.size();
+
+    float lidarDists[size];
+
+    /*
+    for(int i = 0; i < size+4; ++i){
+        //ROS_INFO("%f", msg.ranges[i]);
+        if(isinf(msg.ranges[i+48]) || isnan(msg.ranges[i+48])){
+            msg.ranges[i+48] = 0;
+            //ROS_INFO("%f", msg.ranges[i]);
+        }
+    }
+
+    //Smooth out lidar data
+    for(int i = 0; i < size; ++i){
+        int numFinite = 0;
+        float smooth = 0;
+
+        for(int n = 48; n < 53; ++n){
+            if(msg.ranges[i+n] != 0){
+                smooth += msg.ranges[i+n];
+                numFinite++;
+            }
+        }
+
+        if(numFinite < 3){
+            lidarDists[i] = 0;
+        } else {
+            lidarDists[i] = smooth/numFinite;
+        }
+
+        //ROS_INFO("%f %f %f %f %f", msg.ranges[i+48], msg.ranges[i+49], msg.ranges[i+50], msg.ranges[i+51], msg.ranges[i+52]);
+        //ROS_INFO("%f", lidarDists[i]);
+    }*/
+
+    for(int i = 0; i < size; i++){
+        float delta = fabs(msg.ranges[i] - lastScan[i]);
+        if(delta < 0.1){
+            lidarDists[i] = msg.ranges[i];
+        } else{
+            lidarDists[i] = 0;
+        }
+
+        lastScan[i] = msg.ranges[i];
+    }
+
+    ROS_INFO("DATA SMOOTHED");
+
+    for(unsigned int i = 0; i < size; ++i){
+        ROS_INFO("%f", msg.ranges[i]);
+        ROS_INFO("%f", lidarDists[i]);
+        msg.ranges[i] = lidarDists[i];
+        ROS_INFO("i= %i", i);
+    }
+
+
+
+    //ROS_INFO("PUBLISHING!");
+
+    lidarPub.publish(msg);
 
     //Variables whith index of highest and lowest value in array.
     int one_third = size/3;
     int two_thirds = 2*one_third;
     int minIndex_right = one_third-1;
     int minIndex_middle = two_thirds-1;
-    int minIndex_left = size-50;
+    int minIndex_left = size;
 
     //This cycle goes through array and finds minimum
     for(int i = 50; i < one_third; i++)
     {
-        if (msg.ranges[i] < msg.ranges[minIndex_right] && msg.ranges[i] > minObstDist){
+        if (lidarDists[i] < lidarDists[minIndex_right] && lidarDists[i] > minObstDist){
             minIndex_right = i;
         }
     }
     for(int i = one_third; i < two_thirds; i++)
     {
-        if (msg.ranges[i] < msg.ranges[minIndex_middle] && msg.ranges[i] > minObstDist){
+        if (lidarDists[i] < lidarDists[minIndex_middle] && lidarDists[i] > minObstDist){
             minIndex_middle = i;
         }
     }
     for(int i = two_thirds; i < (size-50); i++)
     {
-        if (msg.ranges[i] < msg.ranges[minIndex_left] && msg.ranges[i] > minObstDist){
+        if (lidarDists[i] < lidarDists[minIndex_left] && lidarDists[i] > minObstDist){
             minIndex_left = i;
         }
     }
 
     //Calculation of angles from indexes and storing data to class variables.
-    double angleDiff_left = (size-minIndex_left)*msg.angle_increment - angleMin_left;
-
-    angleMin_left = (size-minIndex_left)*msg.angle_increment;
+    double angleMin_left = (size-minIndex_left)*msg.angle_increment;
     double angleMin_right = (minIndex_right)*msg.angle_increment;
     double angleMin_middle = (size*3/4-minIndex_middle)*msg.angle_increment;
 
-    double distMin_right = msg.ranges[minIndex_right];
-    double distMin_middle = msg.ranges[minIndex_middle];
-    double distMin_left = msg.ranges[minIndex_left];
+    double distMin_right = lidarDists[minIndex_right];
+    double distMin_middle = lidarDists[minIndex_middle];
+    double distMin_left = lidarDists[minIndex_left];
     //double distFront = msg.ranges[size/2];
+
+
 
     double diffE_left = 0;
     double diffE_right = 0;
 
-    if(angleDiff_left > angleJump){
+    if(prevMinAngles[0] > angleJump && prevMinAngles[1] > angleJump && prevMinAngles[2] > angleJump){
         block = true;
+        prevWallDist = distMin_left;
+    } else{
+
     }
     if (block){
-        if(angleDiff_left > cornerTrackAngle){
-            diffE_left = 0;
-            e_left = 0;
+        ROS_INFO("block");
+        float curbDist = lidarDists[75];
 
-            diffE_right = 0;
-            e_right = 0;
+        if(curbDist > blockDist){
+            ROS_INFO("curbDist= %f", curbDist);
+            diffE_left = (curbDist - wallDist) - e_left;
+            e_left = curbDist - wallDist;
+
+            diffE_right = (distMin_right - wallDist) - e_right;
+            e_right = distMin_right - wallDist;
         } else {
-            diffE_left = (distMin_left - minWallDist) - e_left;
-            e_left = distMin_left - minWallDist;
+            diffE_left = (distMin_left - blockDist) - e_left;
+            e_left = distMin_left - blockDist;
 
-            diffE_right = (distMin_right - minWallDist) - e_right;
-            e_right = distMin_right - minWallDist;
+
+            diffE_right = (distMin_right - blockDist) - e_right;
+            e_right = distMin_right - blockDist;
         }
 
-        if(distMin_left > minWallDist + 0.1){
+        if(distMin_left > blockDist + 0.1){
             block = false;
         }
     } else {
+        ROS_INFO("no block");
         diffE_left = (distMin_left - wallDist) - e_left;
         e_left = distMin_left - wallDist;
 
@@ -226,21 +264,15 @@ void messageCallback(const sensor_msgs::LaserScan msg)
     ROS_INFO( "   angleMin_right= %f", angleMin_right);
     ROS_INFO("dist_middle= %f", distMin_middle);
     ROS_INFO( "   angleMin_middle= %f", angleMin_middle);
-    ROS_INFO("angleDiff_left= %f", angleDiff_left);
 
-    /*std::vector<float> xVals(size);
-    std::vector<float> yVals(size);
+    for(int i = 1; i < 2; i++){
+        prevMinAngles[i+1] = prevMinAngles[i];
+    }
 
-    for(int i = 50; i < size-50; ++i) {
-        float dist = msg.ranges[minIndex_left - i];
-        float angle = (size-minIndex_left-i)*msg.angle_increment;
-
-        xVals[i] = dist*cosf(angle);
-        yVals[i] = dist*sinf(angle);
-    }*/
+    prevMinAngles[0] = angleMin_left;
 
     //Invoking method for publishing message
-    publishMessage(diffE_right, diffE_left, distMin_left, distMin_middle, angleMin_right, angleMin_middle, angleDiff_left);
+    publishMessage(diffE_right, diffE_left, distMin_left, distMin_middle, angleMin_right, angleMin_middle, angleMin_left);
 }
 
 void setP(const std_msgs::Float32::ConstPtr& msg){
@@ -298,8 +330,8 @@ void setAngleJump(const std_msgs::Float32::ConstPtr& msg){
     ROS_INFO("ANGLE_JUMP CHANGED.");
 }
 
-void setMinWallDist(const std_msgs::Float32::ConstPtr& msg){
-    minWallDist = msg->data;
+void setBlockDist(const std_msgs::Float32::ConstPtr& msg){
+    blockDist = msg->data;
     ROS_INFO("MIN_WALL_DIST CHANGED.");
 }
 
@@ -311,6 +343,7 @@ int main(int argc, char **argv)
 
     //Creating publisher
     pubMessage = n.advertise<geometry_msgs::Twist>(PUBLISHER_TOPIC, PUBLISHER_BUFFER_SIZE);
+    lidarPub = n.advertise<sensor_msgs::LaserScan>("/smoothScan", 1000);
 
     //Creating subscriber and publisher
     ros::Subscriber sub = n.subscribe(SUBSCRIBER_TOPIC, SUBSCRIBER_BUFFER_SIZE, messageCallback);
@@ -325,7 +358,7 @@ int main(int argc, char **argv)
     ros::Subscriber midCoefSub = n.subscribe("wall_follow/midCoef", 1, setMidCoef);
     ros::Subscriber maxLeftSpdSub = n.subscribe("wall_follow/maxLeftSpd", 1, setMaxLeftSpd);
     ros::Subscriber angleJumpSub = n.subscribe("wall_follow/angleJump", 1, setAngleJump);
-    ros::Subscriber minWallDistSub = n.subscribe("wall_follow/minWallDist", 1, setMinWallDist);
+    ros::Subscriber blockDistSub = n.subscribe("wall_follow/block", 1, setBlockDist);
     ros::spin();
     
     return 0;
