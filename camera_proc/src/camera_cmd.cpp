@@ -15,43 +15,105 @@ void messageCallback(const std_msgs::Int16MultiArray input){
     std::vector<float> left;
     std::vector<float> right;
     std::vector<float> center;
+    std::vector<float> far;
+    std::vector<float> close;
+    std::vector<int16_t> obst_pos;
+    std::vector<int16_t> obst_height;
+    std::vector<int16_t> max_heights;
     geometry_msgs::Twist msg;
     msg.linear.x = 0.3;
+    msg.angular.z = -0.1;
+
+//    obst_pos = input.data;
+//
+//    for (int i = 0; i < obst_pos.size()-2; i += 4) {
+//        obst_height.push_back(input.data[i + 3]);
+//    }
+//
+//    while (obst_height.size()>0){
+//        int max_index = *std::max_element(obst_height.begin(), obst_height.end());
+//        int max = (int) std::distance(obst_height.begin(), obst_height.end());
+//        max_heights.push_back(max);
+//    }
+//
+//    std::cout << "MAX HEIGHTS HERE WE GO BITCHEZ!" << std::endl;
+//    for (std::vector<short>::const_iterator i = max_heights.begin(); i != max_heights.end(); ++i)
+//        std::cout << *i << ' ';
+//    std::cout << "------" << std::endl;
+
 
     for (int i = 0; i<input.data.size(); i+=4){
+        // float y = input.data[i+1];
+        float height = input.data[i+3];
+        float centery = height/2;
         float x = input.data[i];
         float width = input.data[i+2];
         float centerx = x + width/2;
-
-        if (centerx < 100){
-            left.push_back(x+width);
-        }else if (centerx>=250 && centerx <= 380){
-            center.push_back(x); //center always have left most and right most
-            center.push_back(x+width);
-        }else if (centerx> 440){
-            right.push_back(x);
+        if (centery < 60) {
+            far.push_back(height);
         }
-
+        else if (centery >= 60){
+            close.push_back(height);
+            if (centerx < 250){
+                left.push_back(x+width);
+            }else if (centerx>=250 && centerx <= 440){
+                center.push_back(x); //center always have left most and right most
+                center.push_back(x+width);
+            }else if (centerx> 440){
+                right.push_back(x);
+            }
+        }
     }
-    if (left.size() == 0 && center.size() == 0 && right.size() == 0){// if there's no obstacles
-        msg.angular.z = 0;
-    }else if (center.size() == 0){ // there might be obstacle on the right or left, but not in the middle, so we can go straight
-        msg.angular.z = 0;
+
+    std::cout << "LEFT" << std::endl;
+    for (std::vector<float>::const_iterator i = left.begin(); i != left.end(); ++i)
+        std::cout << *i << ' ';
+    std::cout << "------" << std::endl;
+
+    std::cout << "CENTER" << std::endl;
+    for (std::vector<float>::const_iterator j = center.begin(); j != center.end(); ++j)
+        std::cout << *j << ' ';
+    std::cout << "------" << std::endl;
+
+    std::cout << "RIGHT" << std::endl;
+    for (std::vector<float>::const_iterator k = right.begin(); k != right.end(); ++k)
+        std::cout << *k << ' ';
+    std::cout << "------" << std::endl;
+
+    if (far.size() == 0 && close.size() == 0){// if there's no obstacles
+        msg.linear.x = 0;
+        std::cout << "No obstacles at all" << std::endl;
+    }else if (close.size()>0){
+        msg.linear.x = .3;
+        if (left.size() == 0){ // If there's no close obstacle on the left, go a little left by default
+            if (center.size() == 0){
+                msg.angular.z = -0.1;
+                std::cout << "I'm turning slight left" <<std::endl;
+            }else{
+                msg.angular.z = -.5;
+                std::cout << "I'm turning left" <<std::endl;
+            }
+            pub.publish(msg);
+        }else if (center.size() == 0){ // there might be obstacle on the right, but not in the middle, so we can go straight
+            msg.angular.z = 0;
+            pub.publish(msg);
+            std::cout << "I'm going straight, but there might be obstacles beside me" << std::endl;
+        }else if (right.size() == 0){// There are things on the left and in the center, go right
+            msg.angular.z = .5;
+            pub.publish(msg);
+            std::cout << "I'm turning right" << std::endl;
+        }else{ //if there's obstacles everywhere, just try going straight, and scream on the inside
+            msg.angular.z = 0;
+        }
+        std::cout << "Object is close" << std::endl;
+    }else if (far.size() >0){
+        msg.linear.x = .5;
         pub.publish(msg);
-        std::cout << "I'm going straight, but there might be obstacles beside me" << std::endl;
-    }else if (left.size() > 0 && center.size() > 0 && right.size() == 0){
-        msg.angular.z = .5;
-        pub.publish(msg);
-        std::cout << "I'm turning right" << std::endl;
-    }else if (right.size()>0 && center.size()> 0 && left.size() == 0){
-        msg.angular.z = -.5;
-        pub.publish(msg);
-        std::cout << "I'm turning left" <<std::endl;
-    }else{ //if there's obstacles everywhere, just try going straight, and scream on the inside
-        msg.angular.z = 0;
+        std::cout << "Object is far away" <<std::endl;
     }
 
 }
+
 
 
 int main(int argc, char **argv) {
@@ -64,3 +126,5 @@ int main(int argc, char **argv) {
     pub = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
     ros::spin();
 }
+
+

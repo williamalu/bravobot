@@ -116,7 +116,7 @@ int main(int argc, char **argv)
 
     // Create filter control window
     cv::namedWindow(control_window);
-    cv::createTrackbar("blur", control_window, &blur, 10, NULL);
+    cv::createTrackbar("blur", control_window, &blur, 20, NULL);
     cv::createTrackbar("lowerH", control_window, &lowerH, 180, NULL);
     cv::createTrackbar("upperH", control_window, &upperH, 180, NULL);
     cv::createTrackbar("lowerS", control_window, &lowerS, 256, NULL);
