@@ -126,11 +126,11 @@ void messageCallback(const std_msgs::Int16MultiArray input){
 //        savedHeading = heading;
 //        std::cout << "Saved a Heading" << std::cout;
         msg.linear.x = .3;
-        if (left.size() == 0){ // If there's no close obstacle on the left, go a little left by default
+        if (left.size() == 0 && leftLidObst>1.5){ // If there's no close obstacle on the left, go a little left by default
             if (center.size() == 0){
                 msg.angular.z = -0.05;
                 std::cout << "I'm turning slight left" <<std::endl;
-            }else if (leftLidObst>2.0){
+            }else{
                 msg.angular.z = -.4;
                 std::cout << "I'm turning left" <<std::endl;
             }
