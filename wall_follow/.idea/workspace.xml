@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="CMakeRunConfigurationManager" shouldGenerate="true" assignedExecutableTargets="true" buildAllGenerated="true">
+  <component name="CMakeRunConfigurationManager" shouldGenerate="true" buildAllGenerated="true">
     <generated>
-      <config projectName="wall_follow" targetName="roscpp_generate_messages_cpp" />
-      <config projectName="wall_follow" targetName="gtest" />
-      <config projectName="wall_follow" targetName="doxygen" />
       <config projectName="wall_follow" targetName="rosgraph_msgs_generate_messages_py" />
-      <config projectName="wall_follow" targetName="std_msgs_generate_messages_lisp" />
-      <config projectName="wall_follow" targetName="roscpp_generate_messages_lisp" />
-      <config projectName="wall_follow" targetName="run_tests" />
-      <config projectName="wall_follow" targetName="rosgraph_msgs_generate_messages_lisp" />
-      <config projectName="wall_follow" targetName="_catkin_empty_exported_target" />
-      <config projectName="wall_follow" targetName="clean_test_results" />
-      <config projectName="wall_follow" targetName="rosgraph_msgs_generate_messages_cpp" />
-      <config projectName="wall_follow" targetName="std_msgs_generate_messages_py" />
-      <config projectName="wall_follow" targetName="roscpp_generate_messages_py" />
-      <config projectName="wall_follow" targetName="download_extra_data" />
-      <config projectName="wall_follow" targetName="std_msgs_generate_messages_cpp" />
-      <config projectName="wall_follow" targetName="tests" />
-      <config projectName="wall_follow" targetName="gtest_main" />
       <config projectName="wall_follow" targetName="wall_follow" />
+      <config projectName="wall_follow" targetName="roscpp_generate_messages_cpp" />
+      <config projectName="wall_follow" targetName="roscpp_generate_messages_lisp" />
+      <config projectName="wall_follow" targetName="doxygen" />
+      <config projectName="wall_follow" targetName="rosgraph_msgs_generate_messages_lisp" />
+      <config projectName="wall_follow" targetName="download_extra_data" />
+      <config projectName="wall_follow" targetName="run_tests" />
+      <config projectName="wall_follow" targetName="std_msgs_generate_messages_lisp" />
+      <config projectName="wall_follow" targetName="std_msgs_generate_messages_py" />
+      <config projectName="wall_follow" targetName="clean_test_results" />
+      <config projectName="wall_follow" targetName="roscpp_generate_messages_py" />
+      <config projectName="wall_follow" targetName="_catkin_empty_exported_target" />
+      <config projectName="wall_follow" targetName="std_msgs_generate_messages_cpp" />
+      <config projectName="wall_follow" targetName="rosgraph_msgs_generate_messages_cpp" />
+      <config projectName="wall_follow" targetName="gtest_main" />
+      <config projectName="wall_follow" targetName="tests" />
+      <config projectName="wall_follow" targetName="gtest" />
     </generated>
   </component>
-  <component name="CMakeSettings" AUTO_RELOAD="false" GENERATION_PASS_SYSTEM_ENVIRONMENT="true">
-    <ADDITIONAL_GENERATION_ENVIRONMENT>
-      <envs />
-    </ADDITIONAL_GENERATION_ENVIRONMENT>
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration CONFIG_NAME="Debug" />
+    </configurations>
   </component>
   <component name="ChangeListManager">
     <list default="true" id="750f773c-bf00-49ba-a66f-81b21c5b2e01" name="Default" comment="" />
@@ -48,8 +48,8 @@
       <file leaf-file-name="CMakeLists.txt" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2430">
-              <caret line="135" column="1" selection-start-line="135" selection-start-column="1" selection-end-line="135" selection-end-column="1" />
+            <state relative-caret-position="2025">
+              <caret line="135" column="1" lean-forward="false" selection-start-line="135" selection-start-column="1" selection-end-line="135" selection-end-column="1" />
               <folding />
             </state>
           </provider>
@@ -58,11 +58,31 @@
       <file leaf-file-name="wall_follow.cpp" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/wall_follow.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="89">
-              <caret line="11" column="57" selection-start-line="11" selection-start-column="57" selection-end-line="11" selection-end-column="57" />
+            <state relative-caret-position="188">
+              <caret line="40" column="23" lean-forward="false" selection-start-line="40" selection-start-column="23" selection-end-line="40" selection-end-column="23" />
               <folding>
                 <element signature="e#0#17#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="camera_cmd.cpp" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/../camera_proc/src/camera_cmd.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="315">
+              <caret line="120" column="0" lean-forward="true" selection-start-line="120" selection-start-column="0" selection-end-line="120" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="color_track_purple.cpp" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/../camera_proc/src/color_track_purple.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="2805">
+              <caret line="187" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="187" selection-end-column="0" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -89,6 +109,7 @@
         <option value="$PROJECT_DIR$/src/wall_follow.h" />
         <option value="$PROJECT_DIR$/src/node_wallFollowing.cpp" />
         <option value="$PROJECT_DIR$/src/node_wallFollwing.h" />
+        <option value="$PROJECT_DIR$/../camera_proc/src/camera_cmd.cpp" />
         <option value="$PROJECT_DIR$/src/wall_follow.cpp" />
       </list>
     </option>
@@ -104,16 +125,6 @@
     <option name="y" value="24" />
     <option name="width" value="1535" />
     <option name="height" value="876" />
-  </component>
-  <component name="ProjectLevelVcsManager" settingsEditedManually="false">
-    <OptionsSetting value="true" id="Add" />
-    <OptionsSetting value="true" id="Remove" />
-    <OptionsSetting value="true" id="Checkout" />
-    <OptionsSetting value="true" id="Update" />
-    <OptionsSetting value="true" id="Status" />
-    <OptionsSetting value="true" id="Edit" />
-    <ConfirmationsSetting value="0" id="Add" />
-    <ConfirmationsSetting value="0" id="Remove" />
   </component>
   <component name="ProjectView">
     <navigator currentView="ProjectPane" proportions="" version="1">
@@ -132,12 +143,6 @@
     <panes>
       <pane id="ProjectPane">
         <subPane>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="wall_follow" />
-              <option name="myItemType" value="com.jetbrains.cidr.projectView.CidrFilesViewHelper$MyProjectTreeStructure$1" />
-            </PATH_ELEMENT>
-          </PATH>
           <PATH>
             <PATH_ELEMENT>
               <option name="myItemId" value="wall_follow" />
@@ -168,7 +173,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../camera_proc/src/color_track_purple.cpp" />
     <property name="js.eslint.eslintPackage" value="" />
   </component>
   <component name="RunManager" selected="Application.Build All">
@@ -177,6 +182,12 @@
       <method />
     </configuration>
     <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="wall_follow" TARGET_NAME="_catkin_empty_exported_target" CONFIG_NAME="Debug">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="JavaScriptTestRunnerProtractor" factoryName="Protractor">
+      <config-file value="" />
+      <node-interpreter value="project" />
       <envs />
       <method />
     </configuration>
@@ -443,11 +454,13 @@
       <updated>1480998553584</updated>
       <workItem from="1480998554812" duration="5607000" />
       <workItem from="1481008734047" duration="3428000" />
+      <workItem from="1481190770767" duration="254000" />
+      <workItem from="1481219128371" duration="1361000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="9035000" />
+    <option name="totallyTimeSpent" value="10650000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="65" y="24" width="1535" height="876" extended-state="6" />
@@ -493,8 +506,8 @@
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2430">
-          <caret line="135" column="1" selection-start-line="135" selection-start-column="1" selection-end-line="135" selection-end-column="1" />
+        <state relative-caret-position="2025">
+          <caret line="135" column="1" lean-forward="false" selection-start-line="135" selection-start-column="1" selection-end-line="135" selection-end-column="1" />
           <folding />
         </state>
       </provider>
@@ -502,7 +515,25 @@
     <entry file="file://$PROJECT_DIR$/src/wall_follow.cpp">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#17#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2025">
+          <caret line="135" column="1" lean-forward="false" selection-start-line="135" selection-start-column="1" selection-end-line="135" selection-end-column="1" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/wall_follow.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#0#17#0" expanded="true" />
           </folding>
@@ -512,7 +543,25 @@
     <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2430">
-          <caret line="135" column="1" selection-start-line="135" selection-start-column="1" selection-end-line="135" selection-end-column="1" />
+          <caret line="135" column="1" lean-forward="false" selection-start-line="135" selection-start-column="1" selection-end-line="135" selection-end-column="1" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/wall_follow.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#17#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2025">
+          <caret line="135" column="1" lean-forward="false" selection-start-line="135" selection-start-column="1" selection-end-line="135" selection-end-column="1" />
           <folding />
         </state>
       </provider>
@@ -521,10 +570,26 @@
     <entry file="file://$PROJECT_DIR$/src/node_wallFollwing.h" />
     <entry file="file://$PROJECT_DIR$/src/node_wallFollowing.h" />
     <entry file="file://$PROJECT_DIR$/src/node_wallFollowing.cpp" />
+    <entry file="file://$PROJECT_DIR$/../camera_proc/src/camera_cmd.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="315">
+          <caret line="120" column="0" lean-forward="true" selection-start-line="120" selection-start-column="0" selection-end-line="120" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../camera_proc/src/color_track_purple.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2805">
+          <caret line="187" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="187" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/wall_follow.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="89">
-          <caret line="11" column="57" selection-start-line="11" selection-start-column="57" selection-end-line="11" selection-end-column="57" />
+        <state relative-caret-position="188">
+          <caret line="40" column="23" lean-forward="false" selection-start-line="40" selection-start-column="23" selection-end-line="40" selection-end-column="23" />
           <folding>
             <element signature="e#0#17#0" expanded="true" />
           </folding>
