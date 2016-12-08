@@ -5,24 +5,26 @@
 #include "sensor_msgs/LaserScan.h"
 #include "std_msgs/Float32.h"
 #include "vector"
+#include "std_msgs/Float32MultiArray.h"
 
 //#define PI 3.141592
 
 #define SUBSCRIBER_BUFFER_SIZE 1  // Size of buffer for subscriber.
-#define PUBLISHER_BUFFER_SIZE 1000  // Size of buffer for publisher.
+#define PUBLISHER_BUFFER_SIZE 10  // Size of buffer for publisher.
 //#define MAX_SPEED 0.5
 //#define P 10    // Proportional constant for controller
 //#define D 5     // Derivative constant for controller
 //#define angleCoef 1    // Proportional constant for angle controller
 //#define DIRECTION 1 // 1 for wall on the left side of the robot (-1 for the right side).
 // #define PUBLISHER_TOPIC "/syros/base_cmd_vel"
-#define PUBLISHER_TOPIC "/cmd_vel"
+#define PUBLISHER_TOPIC "/lidar_cmd_vel"
 // #define SUBSCRIBER_TOPIC "/syros/laser_laser"
 #define SUBSCRIBER_TOPIC "/scan"
 
 //Define global variables
 ros::Publisher pubMessage;
 ros::Publisher lidarPub;
+ros::Publisher lidarPosPub;
 double e_left = 0;
 double e_right = 0;
 float setPt = -0.05;
@@ -32,18 +34,17 @@ float D = 0.25;
 float minSpd = 0.30;
 float maxSpd = 0.65;
 float minObstDist= 0.10;
-float blockDist = 0.80;
+float blockDist = 1.25;
 float angleCoef = 1;
 float midCoef = 0.05;
 float maxLeftSpd = -0.35;
-float angleJump = 0.17;
-float cornerTrackAngle = 0.02;
+float angleJump = 0.3;
 //int lookAhead = 50;
 bool block = false;
 float lastScan[512];
 int count = 0;
-float prevMinAngles[3] = {0.0, 0.0, 0.0};
-float prevWallDist = 0;
+double prevMinAngles[3] = {0.0, 0.0, 0.0};
+double prevWallDist = 0;
 
 //Publisher
 void publishMessage(double diffE_right, double diffE_left, double distMin_left, double distMin_middle, double angleMin_right, double angleMin_middle, double angleMin_left)
@@ -88,16 +89,16 @@ void publishMessage(double diffE_right, double diffE_left, double distMin_left, 
 
     //Map speed based on angular velocity
     if(rotVel < 0){
-	    msg.linear.x = maxSpd;
+        msg.linear.x = maxSpd;
     } else if(rotVel == setPt){
         msg.linear.x = maxSpd;
     } else{
         msg.linear.x = maxSpd - (maxSpd - minSpd) * (fabs(rotVel - setPt));
     }
- 
+
     //publishing message
     pubMessage.publish(msg);
-    
+
     ROS_INFO("PARAMETER VALUES: %f %f %f %f %f %f %f %f %f %f %f %f %f", P, D, minSpd, maxSpd, setPt, maxLeftSpd, wallDist, blockDist, minObstDist, angleJump, angleCoef, midCoef);
 
     /*if(!ros::ok()){
@@ -110,6 +111,14 @@ void publishMessage(double diffE_right, double diffE_left, double distMin_left, 
         ROS_INFO("setPt = %f", setPt);
         ROS_INFO("angleCoef = %f", angleCoef);
     }*/
+}
+
+void publishDists(float left, float right){
+    std_msgs::Float32MultiArray msg;
+
+    msg.data.push_back(left);
+    msg.data.push_back(right);
+    lidarPosPub.publish(msg);
 }
 
 //Subscriber
@@ -127,32 +136,28 @@ void messageCallback(sensor_msgs::LaserScan msg)
             //ROS_INFO("%f", msg.ranges[i]);
         }
     }
-
     //Smooth out lidar data
     for(int i = 0; i < size; ++i){
         int numFinite = 0;
         float smooth = 0;
-
         for(int n = 48; n < 53; ++n){
             if(msg.ranges[i+n] != 0){
                 smooth += msg.ranges[i+n];
                 numFinite++;
             }
         }
-
         if(numFinite < 3){
             lidarDists[i] = 0;
         } else {
             lidarDists[i] = smooth/numFinite;
         }
-
         //ROS_INFO("%f %f %f %f %f", msg.ranges[i+48], msg.ranges[i+49], msg.ranges[i+50], msg.ranges[i+51], msg.ranges[i+52]);
         //ROS_INFO("%f", lidarDists[i]);
     }*/
 
     for(int i = 0; i < size; i++){
-        float delta = fabs(msg.ranges[i] - lastScan[i]);
-        if(delta < 0.1){
+        double delta = fabs(msg.ranges[i] - lastScan[i]);
+        if(delta < 0.25){
             lidarDists[i] = msg.ranges[i];
         } else{
             lidarDists[i] = 0;
@@ -164,13 +169,11 @@ void messageCallback(sensor_msgs::LaserScan msg)
     ROS_INFO("DATA SMOOTHED");
 
     for(unsigned int i = 0; i < size; ++i){
-        ROS_INFO("%f", msg.ranges[i]);
-        ROS_INFO("%f", lidarDists[i]);
+        //ROS_INFO("%f", msg.ranges[i]);
+        //ROS_INFO("%f", lidarDists[i]);
         msg.ranges[i] = lidarDists[i];
-        ROS_INFO("i= %i", i);
+        //ROS_INFO("i= %i", i);
     }
-
-
 
     //ROS_INFO("PUBLISHING!");
 
@@ -182,24 +185,31 @@ void messageCallback(sensor_msgs::LaserScan msg)
     int minIndex_right = one_third-1;
     int minIndex_middle = two_thirds-1;
     int minIndex_left = size;
+    double distMin_right = 10;
+    double distMin_middle = 10;
+    double distMin_left = 10;
 
     //This cycle goes through array and finds minimum
     for(int i = 50; i < one_third; i++)
     {
-        if (lidarDists[i] < lidarDists[minIndex_right] && lidarDists[i] > minObstDist){
+        if (lidarDists[i] < distMin_right && lidarDists[i] > minObstDist){
             minIndex_right = i;
+            distMin_right = lidarDists[i];
         }
     }
     for(int i = one_third; i < two_thirds; i++)
     {
-        if (lidarDists[i] < lidarDists[minIndex_middle] && lidarDists[i] > minObstDist){
+        if (lidarDists[i] < distMin_middle && lidarDists[i] > minObstDist){
             minIndex_middle = i;
+            distMin_middle = lidarDists[i];
         }
     }
     for(int i = two_thirds; i < (size-50); i++)
     {
-        if (lidarDists[i] < lidarDists[minIndex_left] && lidarDists[i] > minObstDist){
+        //ROS_INFO("%f", msg.ranges[i]);
+        if (lidarDists[i] < distMin_left && lidarDists[i] > minObstDist){
             minIndex_left = i;
+            distMin_left = lidarDists[i];
         }
     }
 
@@ -208,17 +218,15 @@ void messageCallback(sensor_msgs::LaserScan msg)
     double angleMin_right = (minIndex_right)*msg.angle_increment;
     double angleMin_middle = (size*3/4-minIndex_middle)*msg.angle_increment;
 
-    double distMin_right = lidarDists[minIndex_right];
-    double distMin_middle = lidarDists[minIndex_middle];
-    double distMin_left = lidarDists[minIndex_left];
+    distMin_right = lidarDists[minIndex_right];
+    distMin_middle = lidarDists[minIndex_middle];
+    distMin_left = lidarDists[minIndex_left];
     //double distFront = msg.ranges[size/2];
-
-
 
     double diffE_left = 0;
     double diffE_right = 0;
 
-    if(prevMinAngles[0] > angleJump && prevMinAngles[1] > angleJump && prevMinAngles[2] > angleJump){
+    if(abs(angleMin_left - prevMinAngles[2] > angleJump)){
         block = true;
         prevWallDist = distMin_left;
     } else{
@@ -226,10 +234,21 @@ void messageCallback(sensor_msgs::LaserScan msg)
     }
     if (block){
         ROS_INFO("block");
-        float curbDist = lidarDists[75];
+
+        float curbDist;
+
+        for(int i = minIndex_left; i < size - 50; i++){
+            if(fabs(lidarDists[i] - prevWallDist) < 0.2){
+                curbDist = lidarDists[i];
+                break;
+            } else{
+                curbDist = 0;
+            }
+        }
+
+        ROS_INFO("curbDist= %f", curbDist);
 
         if(curbDist > blockDist){
-            ROS_INFO("curbDist= %f", curbDist);
             diffE_left = (curbDist - wallDist) - e_left;
             e_left = curbDist - wallDist;
 
@@ -244,7 +263,7 @@ void messageCallback(sensor_msgs::LaserScan msg)
             e_right = distMin_right - blockDist;
         }
 
-        if(distMin_left > blockDist + 0.1){
+        if(fabs(diffE_left) > 0.2){
             block = false;
         }
     } else {
@@ -264,6 +283,8 @@ void messageCallback(sensor_msgs::LaserScan msg)
     ROS_INFO( "   angleMin_right= %f", angleMin_right);
     ROS_INFO("dist_middle= %f", distMin_middle);
     ROS_INFO( "   angleMin_middle= %f", angleMin_middle);
+
+    publishDists((float)distMin_left, (float)distMin_right);
 
     for(int i = 1; i < 2; i++){
         prevMinAngles[i+1] = prevMinAngles[i];
@@ -344,6 +365,7 @@ int main(int argc, char **argv)
     //Creating publisher
     pubMessage = n.advertise<geometry_msgs::Twist>(PUBLISHER_TOPIC, PUBLISHER_BUFFER_SIZE);
     lidarPub = n.advertise<sensor_msgs::LaserScan>("/smoothScan", 1000);
+    lidarPosPub = n.advertise<std_msgs::Float32MultiArray>("/lidPos", 1000);
 
     //Creating subscriber and publisher
     ros::Subscriber sub = n.subscribe(SUBSCRIBER_TOPIC, SUBSCRIBER_BUFFER_SIZE, messageCallback);
@@ -360,6 +382,6 @@ int main(int argc, char **argv)
     ros::Subscriber angleJumpSub = n.subscribe("wall_follow/angleJump", 1, setAngleJump);
     ros::Subscriber blockDistSub = n.subscribe("wall_follow/block", 1, setBlockDist);
     ros::spin();
-    
+
     return 0;
 }
