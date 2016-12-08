@@ -9,8 +9,12 @@
 #include <ros/ros.h>
 
 ros::Publisher pub;
+
 float heading=-100;
 float savedHeading=-100;
+
+float leftLidObst;
+float rightLidObst;
 
 //camera screen is 640 * 480
 void headTo(float desired){
@@ -19,6 +23,11 @@ void headTo(float desired){
     while (heading!=desired){
         msg.angular.z=0.1*error;
     }
+}
+
+//maps an camera screen x value to a turning direction between -0.4 and 0.4
+float mapAngular(int avgx){
+    return (avgx-320)*0.4/320;
 }
 
 void messageCallback(const std_msgs::Int16MultiArray input){
@@ -125,15 +134,27 @@ void messageCallback(const std_msgs::Int16MultiArray input){
             pub.publish(msg);
             std::cout << "I'm turning right" << std::endl;
         }else{ //if there's obstacles everywhere, just try going straight, and scream on the inside
-            msg.angular.z = 0;
+            if (leftLidObst < 2.0){
+                msg.angular.z = 0.5;
+                std::cout << "There are obstacles in front, a curb on the left, I'm turning right" << std::endl;
+            }else if (rightLidObst<2.0){
+                msg.angular.z = -0.5;
+                std::cout << "There are obstacles in front, an obstacle on the right, I'm turning left" << std::endl;
+            }
+            pub.publish(msg);
         }
         std::cout << "Object is close" << std::endl;
-    }else if (far.size() >0){
+    }else if (far.size() > 0){
+        float avgx = 0;
+        for (int i = 0; i<far.size(); i++){
+            avgx+= far[i];
+        }
+        avgx/= far.size();
         msg.linear.x = .5;
+        msg.linear.z = mapAngular(avgx);
         pub.publish(msg);
         std::cout << "Object is far away" <<std::endl;
     }
-
 }
 
 void IMUCallback(const geometry_msgs::Vector3Stamped::ConstPtr &msg){
@@ -153,7 +174,11 @@ void IMUCallback(const geometry_msgs::Vector3Stamped::ConstPtr &msg){
     // std::cout << "Current heading: " << compassHeading << std::endl;
 }
 
-
+void lidCallback(const std_msgs::Int16MultiArray lidPos){
+    leftLidObst = lidPos[0];
+    frontLidObst = lidPos[1];
+    rightLidObst = lidPos[2];
+}
 
 int main(int argc, char **argv) {
     ros::init(argc, argv, "camera_cmd");
@@ -162,7 +187,8 @@ int main(int argc, char **argv) {
 
     ros::Subscriber sub = nh.subscribe("obstacle_positions", 10, messageCallback);
     ros::Subscriber imu = nh.subscribe("imu_data", 10, IMUCallback);
-
+    ros::Subscriber lidsub = nh.subscribe("lidPos",10, lidCallback);
+    
     pub = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
     ros::spin();
 }
