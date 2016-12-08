@@ -24,7 +24,7 @@ public:
 
 	int Dist2WP(float, float, int);
 	float FindGPSHeading(float, float, int);
-	void FindNewHeading(float, float, float, double, int);
+	float FindNewHeading(float, float, float, double, int);
 
 
 public:	
@@ -74,6 +74,7 @@ public:
 	double IMUHeading;
 
 	std_msgs::Float64 dCompassHeading;
+	std_msgs::Float64 dHeading;
 
 	int arbArray [7];
 
@@ -84,10 +85,11 @@ public:
 	std::stringstream direction;
 
 	std_msgs::Float64 pubimu;
-
+	std_msgs::Float64 pubheading;
 
 	int maxturnrad;
 
 	ros::Publisher pubvel;
 	ros::Publisher pubIMU;
+	ros::Publisher pubHeading;
 };

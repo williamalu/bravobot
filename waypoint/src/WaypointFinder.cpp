@@ -82,7 +82,7 @@ float WaypointFinder::FindGPSHeading(float passedLat, float passedLong, int pass
 	return GPSHeading;
 }
 
-void WaypointFinder::FindNewHeading(float passedLat, float passedLong, float passedGPSHeading, double passedIMUHeading, int passWP){
+float WaypointFinder::FindNewHeading(float passedLat, float passedLong, float passedGPSHeading, double passedIMUHeading, int passWP){
 	std::cout << std::setprecision(7); // show 16 digits
 
 	currentLat = passedLat;
@@ -133,6 +133,8 @@ void WaypointFinder::FindNewHeading(float passedLat, float passedLong, float pas
 		}
 		std::cout << direction.str() << "! Angle is " << newHeading << std::endl << std::endl;
 		// std::cout << 
+
+		return newHeading;
 	}
 	catch (...){
 		std::cout << "Error in FindNewHeading" << std::endl;
@@ -168,7 +170,6 @@ void WaypointFinder::IMUCallback(const geometry_msgs::Vector3Stamped::ConstPtr &
 	}
 
 	dCompassHeading.data = static_cast<double>(compassHeading);
-
 	pubimu = dCompassHeading;
 	// std::cout << "Current heading: " << compassHeading << std::endl;
 }
@@ -192,7 +193,10 @@ void WaypointFinder::GPSCallback(const sensor_msgs::NavSatFix &msg){
 		currwp = WaypointFinder::Dist2WP(currentLat, currentLong, currwp);
 		GPSHeading = WaypointFinder::FindGPSHeading(currentLat, currentLong, currwp);
 		// std::cout << "GPS Heading: " << GPSHeading << std::endl;
-		WaypointFinder::FindNewHeading(currentLat, currentLong, GPSHeading, IMUHeading, currwp);
+		newHeading = WaypointFinder::FindNewHeading(currentLat, currentLong, GPSHeading, IMUHeading, currwp);
+
+		dHeading.data = static_cast<double>(newHeading);
+		pubheading = dHeading;
 
 	}
 	direction.str(std::string());
@@ -238,6 +242,7 @@ void WaypointFinder::init(int argc, char* argv[]){
 
 	pubvel = nh.advertise<std_msgs::String>("velocity", 1000);
 	pubIMU = nh.advertise<std_msgs::Float64>("imu_data", 1000);
+	pubHeading = nh.advertise<std_msgs::Float64>("heading", 1000);
 
 	ros::Rate loop_rate(10);
 
