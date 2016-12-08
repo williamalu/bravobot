@@ -9,8 +9,18 @@
 #include <ros/ros.h>
 
 ros::Publisher pub;
+float heading=-100;
+float savedHeading=-100;
 
 //camera screen is 640 * 480
+void headTo(float desired){
+    float error = desired-heading;
+    //if negative, drift left, else drift right
+    while (heading!=desired){
+        msg.angular.z=0.1*error;
+    }
+}
+
 void messageCallback(const std_msgs::Int16MultiArray input){
     std::vector<float> left;
     std::vector<float> right;
@@ -22,7 +32,7 @@ void messageCallback(const std_msgs::Int16MultiArray input){
     std::vector<int16_t> max_heights;
     geometry_msgs::Twist msg;
     msg.linear.x = 0.3;
-    msg.angular.z = -0.1;
+    msg.angular.z = -0.15;
 
 //    obst_pos = input.data;
 //
@@ -83,11 +93,23 @@ void messageCallback(const std_msgs::Int16MultiArray input){
     if (far.size() == 0 && close.size() == 0){// if there's no obstacles
         msg.linear.x = 0;
         std::cout << "No obstacles at all" << std::endl;
+        if (savedHeading != heading && savedHeading != -100){
+            headTo(savedHeading);
+            std::cout << "Headed back to saved heading";
+            savedHeading = -100;
+        }
+        else if (savedHeading == -100){
+            msg.angular.z=0;
+            pub.publish(msg);
+            std::cout << "Going straight because no obstacle and no saved heading" << std::endl;
+        }
     }else if (close.size()>0){
+        savedHeading = heading;
+        std::cout << "Saved a Heading" << std::cout;
         msg.linear.x = .3;
         if (left.size() == 0){ // If there's no close obstacle on the left, go a little left by default
             if (center.size() == 0){
-                msg.angular.z = -0.1;
+                msg.angular.z = -0.15;
                 std::cout << "I'm turning slight left" <<std::endl;
             }else{
                 msg.angular.z = -.5;
@@ -114,6 +136,23 @@ void messageCallback(const std_msgs::Int16MultiArray input){
 
 }
 
+void IMUCallback(const geometry_msgs::Vector3Stamped::ConstPtr &msg){
+    float headingx = msg->vector.x;
+    float headingy = msg->vector.y;
+    float headingz = msg->vector.z;
+
+    float compassHeading = (std::atan2(headingy,headingx) * 180.00000) / 3.14159265359;
+
+    // Normalize to 0-360
+    if (compassHeading < 0)
+    {
+        compassHeading = 360.00000 + compassHeading;
+    }
+
+    heading = static_cast<double>(compassHeading);
+    // std::cout << "Current heading: " << compassHeading << std::endl;
+}
+
 
 
 int main(int argc, char **argv) {
@@ -122,6 +161,7 @@ int main(int argc, char **argv) {
     ros::NodeHandle nh;
 
     ros::Subscriber sub = nh.subscribe("obstacle_positions", 10, messageCallback);
+    ros::Subscriber imu = nh.subscribe("imu_data", 10, IMUCallback);
 
     pub = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
     ros::spin();
