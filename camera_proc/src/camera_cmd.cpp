@@ -20,6 +20,8 @@ float savedHeading=-100;
 float leftLidObst = 0;
 float rightLidObst = 6;
 
+float lidlinx = 0;
+float lidAngz = 0;
 //camera screen is 640 * 480
 void headTo(float desired){
     float error = desired-heading;
@@ -45,7 +47,7 @@ void messageCallback(const std_msgs::Int16MultiArray input){
     std::vector<int16_t> max_heights;
 
     msg.linear.x = 0.3;
-    msg.angular.z = -0.15;
+    msg.angular.z = -0.05;
 
 //    obst_pos = input.data;
 //
@@ -102,30 +104,34 @@ void messageCallback(const std_msgs::Int16MultiArray input){
         std::cout << *k << ' ';
     std::cout << "------" << std::endl;
 
-    if (far.size() == 0 && close.size() == 0){// if there's no obstacles
-        msg.linear.x = 0;
-        std::cout << "No obstacles at all" << std::endl;
-        if (savedHeading != heading && savedHeading != -100){
-            headTo(savedHeading);
-            std::cout << "Headed back to saved heading";
-            savedHeading = -100;
-        }
-        else if (savedHeading == -100){
-            msg.angular.z=0;
-            msg.linear.x=.3;
-            pub.publish(msg);
-            std::cout << "Going straight because no obstacle and no saved heading" << std::endl;
-        }
+    if (far.size() == 0 && close.size() == 0){// if there's no obstacles, follow lidar
+        msg.linear.x = lidlinx;
+        msg.angular.z = lidAngz;
+        std::cout << "I don't see obstacles, following Lidar" <<std::endl;
+        pub.publish(msg);
+//        msg.linear.x = 0;
+//        std::cout << "No obstacles at all" << std::endl;
+//        if (savedHeading != heading && savedHeading != -100){
+//            headTo(savedHeading);
+//            std::cout << "Headed back to saved heading";
+//            savedHeading = -100;
+//        }
+//        else if (savedHeading == -100){
+//            msg.angular.z=0;
+//            msg.linear.x=.3;
+//            pub.publish(msg);
+//            std::cout << "Going straight because no obstacle and no saved heading" << std::endl;
+//        }
     }else if (close.size()>0){
-        savedHeading = heading;
-        std::cout << "Saved a Heading" << std::cout;
+//        savedHeading = heading;
+//        std::cout << "Saved a Heading" << std::cout;
         msg.linear.x = .3;
         if (left.size() == 0){ // If there's no close obstacle on the left, go a little left by default
             if (center.size() == 0){
-                msg.angular.z = -0.15;
+                msg.angular.z = -0.05;
                 std::cout << "I'm turning slight left" <<std::endl;
-            }else{
-                msg.angular.z = -.5;
+            }else if (leftLidObst>2.0){
+                msg.angular.z = -.4;
                 std::cout << "I'm turning left" <<std::endl;
             }
             pub.publish(msg);
@@ -133,11 +139,11 @@ void messageCallback(const std_msgs::Int16MultiArray input){
             msg.angular.z = 0;
             pub.publish(msg);
             std::cout << "I'm going straight, but there might be obstacles beside me" << std::endl;
-        }else if (right.size() == 0){// There are things on the left and in the center, go right
+        }else if (right.size() == 0 && rightLidObst>2.0){// There are things on the left and in the center, go right
             msg.angular.z = .5;
             pub.publish(msg);
             std::cout << "I'm turning right" << std::endl;
-        }else{ //if there's obstacles everywhere, just try going straight, and scream on the inside
+        }else{ //if there's obstacles everywhere, look at lidar data
             if (leftLidObst < 2.0){
                 msg.angular.z = 0.5;
                 std::cout << "There are obstacles in front, a curb on the left, I'm turning right" << std::endl;
@@ -178,9 +184,14 @@ void IMUCallback(const geometry_msgs::Vector3Stamped::ConstPtr &IMUmsg){
     // std::cout << "Current heading: " << compassHeading << std::endl;
 }
 
-void lidCallback(const std_msgs::Float32MultiArray lidPos) {
+void lidPosCallback(const std_msgs::Float32MultiArray lidPos) {
     leftLidObst = lidPos.data[0];
     rightLidObst = lidPos.data[1];
+}
+
+void lidCmdCallback(const geometry_msgs::Twist lidCmd){
+    lidlinx = lidCmd.linear.x;
+    lidAngz = lidCmd.angular.z;
 }
 
 int main(int argc, char **argv) {
@@ -190,9 +201,10 @@ int main(int argc, char **argv) {
 
     ros::Subscriber sub = nh.subscribe("obstacle_positions", 10, messageCallback);
     ros::Subscriber imu = nh.subscribe("imu_data", 10, IMUCallback);
-    ros::Subscriber lidsub = nh.subscribe("lidPos",10, lidCallback);
+    ros::Subscriber lidPossub = nh.subscribe("lidPos",10, lidPosCallback);
+    ros::Subscriber lidCmdsub = nh.subscribe("lidar/cmd_vel", 10, lidCmdCallback);
     
-    pub = nh.advertise<geometry_msgs::Twist>("cmr/cmd_vel", 1000);
+    pub = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
     ros::spin();
 }
 

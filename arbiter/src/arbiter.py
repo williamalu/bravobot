@@ -49,7 +49,7 @@ class Arbiter(object):
 
 if __name__ == '__main__':
 	main = Arbiter()
-	r = rospy.Rate(50)
+	r = rospy.Rate(100)
 	while not rospy.is_shutdown():
 		main.run()
 		r.sleep()

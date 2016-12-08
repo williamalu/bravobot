@@ -131,9 +131,11 @@
       <file leaf-file-name="camera_cmd.cpp" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/camera_cmd.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="0">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-              <folding />
+            <state relative-caret-position="-832">
+              <caret line="123" column="11" selection-start-line="123" selection-start-column="11" selection-end-line="123" selection-end-column="11" />
+              <folding>
+                <element signature="e#43#80#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -625,12 +627,12 @@
       <workItem from="1481168409841" duration="2091000" />
       <workItem from="1481171495330" duration="895000" />
       <workItem from="1481173435423" duration="1966000" />
-      <workItem from="1481207390661" duration="1154000" />
+      <workItem from="1481207390661" duration="2454000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="32600000" />
+    <option name="totallyTimeSpent" value="33900000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="65" y="24" width="1535" height="876" extended-state="6" />
@@ -722,7 +724,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#43#80#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -792,7 +796,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#43#80#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -862,7 +868,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+          <folding>
+            <element signature="e#43#80#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -1071,9 +1079,11 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/camera_cmd.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
+        <state relative-caret-position="-832">
+          <caret line="123" column="11" selection-start-line="123" selection-start-column="11" selection-end-line="123" selection-end-column="11" />
+          <folding>
+            <element signature="e#43#80#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
