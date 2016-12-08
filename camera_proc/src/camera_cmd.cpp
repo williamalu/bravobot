@@ -73,7 +73,7 @@ void messageCallback(const std_msgs::Int16MultiArray input){
         float x = input.data[i];
         float width = input.data[i+2];
         float centerx = x + width/2;
-        if (centery < 60) {
+        if (centery < 60 && centery>20) {
             far.push_back(height);
         }
         else if (centery >= 60){
@@ -150,6 +150,9 @@ void messageCallback(const std_msgs::Int16MultiArray input){
             }else if (rightLidObst<2.0){
                 msg.angular.z = -0.5;
                 std::cout << "There are obstacles in front, an obstacle on the right, I'm turning left" << std::endl;
+            }else{
+                msg.angular.z = 0;
+                std::cout << "There are obstacles all around me, don't know what to do" << std::endl;
             }
             pub.publish(msg);
         }
