@@ -18,7 +18,7 @@ class Arbiter(object):
 		self.irz = 0
 		rospy.init_node('arbiter')
 		rospy.Subscriber('lidar/cmd_vel', Twist, self.lidar_cmd_vel)
-		rospy.Subscriber('cmr/cam_cmd_vel', Twist, self.cmr_cmd_vel)
+		rospy.Subscriber('cmr/cmd_vel', Twist, self.cmr_cmd_vel)
 		rospy.Subscriber('ir/cmd_vel', Twist, self.ir_cmd_vel)
 		rospy.Subscriber
 		self.cmd_vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
