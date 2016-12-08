@@ -38,7 +38,7 @@ float minObstDist= 0.10;
 float blockDist = 1.25;
 float angleCoef = 1;
 float midCoef = 0.5;
-float maxLeftSpd = -0.25;
+float maxLeftSpd = -0.20;
 float angleJump = 0.3;
 //int lookAhead = 50;
 bool block = false;
@@ -89,8 +89,6 @@ void publishMessage(double diffE_right, double diffE_left, double distMin_left, 
 
     ROS_INFO("rotVel= %f", rotVel);
 
-    msg.angular.z = rotVel;
-
     //Map speed based on angular velocity
     if(rotVel < 0){
         msg.linear.x = maxSpd;
@@ -100,7 +98,15 @@ void publishMessage(double diffE_right, double diffE_left, double distMin_left, 
         msg.linear.x = maxSpd - (maxSpd - minSpd) * (fabs(rotVel - setPt));
     }
 
-    //publishing message
+    if(e_left > 0.75) {
+        rotVel = setPt;
+        msg.linear.x = 0.20;
+    }
+
+    msg.angular.z = rotVel;
+
+
+        //publishing message
     pubMessage.publish(msg);
 
     ROS_INFO("PARAMETER VALUES: %f %f %f %f %f %f %f %f %f %f %f %f %f", P, D, minSpd, maxSpd, setPt, maxLeftSpd, wallDist, blockDist, minObstDist, angleJump, angleCoef, midCoef);
