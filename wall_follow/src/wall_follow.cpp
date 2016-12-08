@@ -31,14 +31,14 @@ double e_right = 0;
 float setPt = -0.05;
 float wallDist = 1.5;
 float P = 0.50;
-float D = 0.25;
+float D = 0.18;
 float minSpd = 0.30;
 float maxSpd = 0.65;
 float minObstDist= 0.10;
 float blockDist = 1.25;
 float angleCoef = 1;
 float midCoef = 0.5;
-float maxLeftSpd = -0.35;
+float maxLeftSpd = -0.25;
 float angleJump = 0.3;
 //int lookAhead = 50;
 bool block = false;
@@ -46,6 +46,8 @@ float lastScan[512];
 double prevMinAngles[3] = {1.0, 1.0, 1.0};
 double prevWallDist = 0;
 double switchAngle = 0;
+double wallAvg = (double)wallDist;
+bool gap = false;
 
 //Publisher
 void publishMessage(double diffE_right, double diffE_left, double distMin_left, double distMin_middle, double angleMin_right, double angleMin_middle, double angleMin_left)
@@ -57,7 +59,7 @@ void publishMessage(double diffE_right, double diffE_left, double distMin_left, 
     double rotVel_left = 0;
 
     if(block){
-        rotVel_left = setPt + -(P * (e_left) + D * diffE_left);
+        rotVel_left = setPt + -(P * e_left + D * diffE_left);
     } else {
         rotVel_left = setPt + -(P * e_left + D * diffE_left);
         // + angleCoef * (angleMin_left);
@@ -82,12 +84,12 @@ void publishMessage(double diffE_right, double diffE_left, double distMin_left, 
 
     if(rotVel < maxLeftSpd){
         rotVel = maxLeftSpd;
-    }
+    }   
     if((std::isinf(e_left) && std::isinf(e_right))){
         rotVel = setPt;
     }
-    if(!block){
-        
+    if(gap){
+       rotVel = setPt;
     }
 
     ROS_INFO("rotVel= %f", rotVel);
@@ -276,6 +278,10 @@ void messageCallback(sensor_msgs::LaserScan msg)
             e_right = distMin_right - blockDist;
         }
 
+        if(curbDist > distMin_left){
+            wallAvg = (wallAvg+curbDist)/2;
+        }
+
         if(fabs(diffE_left) > 0.2){
             block = false;
         }
@@ -287,6 +293,14 @@ void messageCallback(sensor_msgs::LaserScan msg)
         diffE_right = (distMin_right - wallDist) - e_right;
         e_right = distMin_right - wallDist;
     }
+    if(distMin_left > wallAvg+0.5){
+        gap = true;
+    } else{
+        gap = false;
+    }
+    if(!block && !gap){
+        wallAvg = (wallAvg+distMin_left)/2;
+    }
 
     ROS_INFO("dist_left= %f", distMin_left);
     ROS_INFO( "   diffE_left= %f", diffE_left);
@@ -296,6 +310,7 @@ void messageCallback(sensor_msgs::LaserScan msg)
     ROS_INFO( "   angleMin_right= %f", angleMin_right);
     ROS_INFO("dist_middle= %f", distMin_middle);
     ROS_INFO( "   angleMin_middle= %f", angleMin_middle);
+    ROS_INFO("wall_avg= %f", wallAvg);
 
     publishDists((float)distMin_left, (float)distMin_right);
 
