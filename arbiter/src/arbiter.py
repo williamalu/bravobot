@@ -26,6 +26,7 @@ class Arbiter(object):
 	def lidar_cmd_vel(self, msg):
 		self.lidx = msg.linear.x
 		self.lidz = msg.angular.z
+
 	def cmr_cmd_vel(self, msg): #camera command velocity
 		self.cmrx = msg.linear.x
 		self.cmrz = msg.angular.z
