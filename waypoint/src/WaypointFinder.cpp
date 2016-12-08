@@ -74,9 +74,9 @@ void WaypointFinder::FindNewHeading(float passedLat, float passedLong, float pas
 
 	currentLat = passedLat;
 	currentLong = passedLong;
-	passWP = currwp;
-	passedGPSHeading = GPSHeading;
-	passedIMUHeading = IMUHeading;
+	currwp = passedWP;
+	GPSHeading = passedGPSHeading;
+	IMUHeading = passedIMUHeading - 14.00000; // Account for magnetic declination
 
 	wpLat = waypointLats[currwp];
 	wpLong = waypointLongs[currwp];
