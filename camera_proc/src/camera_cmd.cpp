@@ -17,8 +17,8 @@ geometry_msgs::Twist msg;
 float heading=-100;
 float savedHeading=-100;
 
-float leftLidObst;
-float rightLidObst;
+float leftLidObst = 0;
+float rightLidObst = 6;
 
 //camera screen is 640 * 480
 void headTo(float desired){
