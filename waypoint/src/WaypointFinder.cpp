@@ -162,6 +162,9 @@ void WaypointFinder::IMUCallback(const geometry_msgs::Vector3Stamped::ConstPtr &
 	compassHeading = 360.00000 + compassHeading;
 	}
 
+	dCompassHeading.data = static_cast<double>(compassHeading);
+
+	pubimu = dCompassHeading;
 	// std::cout << "Current heading: " << compassHeading << std::endl;
 }
 
@@ -226,7 +229,7 @@ void WaypointFinder::init(int argc, char* argv[]){
 	// subIMU = nh.subscribe("/imu/mag", 10, &WaypointFinder::IMUCallback, this);
 
 	pubvel = nh.advertise<std_msgs::String>("velocity", 1000);
-	// pubwp = nh.advertise<std_msgs::Float64MultiArray>("wplist", 1000);
+	pubIMU = nh.advertise<std_msgs::Float64>("imu", 1000);
 
 	ros::Rate loop_rate(10);
 
@@ -237,7 +240,8 @@ void WaypointFinder::init(int argc, char* argv[]){
   		// wp_pub.publish("");
   		pubdirection.data = direction.str();
 	    pubvel.publish(pubdirection);
-	    // pubwp.publish(pub_currwp);
+
+	    pubIMU.publish(pubimu);
 
 	    ros::spinOnce();
 
@@ -245,7 +249,7 @@ void WaypointFinder::init(int argc, char* argv[]){
 
 	    // ++count;
 	    // std::cout << direction.str() << std::endl;
-	//     std::cout << count << "   " << pubdirection.data.c_str() << "Hoi" << std::endl;
+	    // std::cout << pubimu << std::endl;
 	}
 
 }

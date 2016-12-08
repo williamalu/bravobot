@@ -70,6 +70,8 @@ public:
 	float GPSHeading;
 	float compassHeading;
 
+	std_msgs::Float64 dCompassHeading;
+
 	int arbArray [7];
 
 	float waypointLats [5]; // The current queue of waypoint latitudes
@@ -77,14 +79,13 @@ public:
 
 	std_msgs::String pubdirection;
 	std::stringstream direction;
-	// std::stringstream s;
+
+	std_msgs::Float64 pubimu;
 
 
 	int maxturnrad;
 
 	ros::Publisher pubvel;
-	ros::Publisher pubwp;
-	// ros::Publisher goto;
-
+	ros::Publisher pubIMU;
 };
 
