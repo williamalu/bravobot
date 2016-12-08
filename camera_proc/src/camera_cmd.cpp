@@ -112,6 +112,7 @@ void messageCallback(const std_msgs::Int16MultiArray input){
         }
         else if (savedHeading == -100){
             msg.angular.z=0;
+            msg.linear.x=.3;
             pub.publish(msg);
             std::cout << "Going straight because no obstacle and no saved heading" << std::endl;
         }
