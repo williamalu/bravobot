@@ -23,8 +23,8 @@ public:
 	void IMUCallback(const geometry_msgs::Vector3Stamped::ConstPtr &msg);
 
 	int Dist2WP(float, float);
-	void FindGPSHeading(float, float, int);
-	void FindNewHeading(float, float, int);
+	float FindGPSHeading(float, float, int);
+	void FindNewHeading(float, float, float, double, int);
 
 
 public:	
@@ -67,8 +67,11 @@ public:
 	float dremainLat;
 	float dremainLong;
 
+	float newHeading;
 	float GPSHeading;
 	float compassHeading;
+
+	double IMUHeading;
 
 	std_msgs::Float64 dCompassHeading;
 

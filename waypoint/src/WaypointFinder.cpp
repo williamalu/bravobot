@@ -52,7 +52,7 @@ int WaypointFinder::Dist2WP(float passedLat, float passedLong){
 	return currwp;
 }
 
-void WaypointFinder::FindGPSHeading(float passedLat, float passedLong, int passWP){
+float WaypointFinder::FindGPSHeading(float passedLat, float passedLong, int passWP){
 	currentLat = passedLat;
 	currentLong = passedLong;
 	passWP = currwp;
@@ -65,72 +65,64 @@ void WaypointFinder::FindGPSHeading(float passedLat, float passedLong, int passW
 	dremainLong = currentLong - wpLong;
 
 	GPSHeading = std::atan(std::abs(dremainLong/dremainLat));
-	std::cout << (GPSHeading * 57.2957795) << " degrees to waypoint" << std::endl;
+	// std::cout << (GPSHeading * 57.2957795) << " degrees to waypoint" << std::endl;
+	return GPSHeading;
 }
 
-void WaypointFinder::FindNewHeading(float passedLat, float passedLong, int passWP){
+void WaypointFinder::FindNewHeading(float passedLat, float passedLong, float passedGPSHeading, double passedIMUHeading, int passWP){
+	std::cout << std::setprecision(7); // show 16 digits
+
+	currentLat = passedLat;
+	currentLong = passedLong;
+	passWP = currwp;
+	passedGPSHeading = GPSHeading;
+	passedIMUHeading = IMUHeading;
+
+	wpLat = waypointLats[currwp];
+	wpLong = waypointLongs[currwp];
+
+	dremainLat = wpLat - currentLat;
+	dremainLong = wpLong - currentLong;
 
 	try{
-		for ( i=0; i < 7; i++ ) {
-			arbArray [i] = 0;
-		}
+		newHeading = (GPSHeading + IMUHeading)/2.00000;
+		// newHeading = GPSHeading;
 
-		if(std::atan(std::abs(dremainLong/dremainLat)) <= std::tan(0.523598776)){ //atan(|y/x|) <= tan(30 deg)
+		if(newHeading <= std::tan(0.523598776)){ //atan(|y/x|) <= tan(30 deg)
 			//If the heading angle to the next waypoint is less than 30 deg, hard turn left/right
 			if(dremainLat == std::abs(dremainLat)){ //remaining x is positive, must turn right
-				direction << "Hard right" << std::endl;
-
-				arbArray[6] = 1;
-				arbArray[5] = 0.5;
+				direction << "Hard right";
 			}
 			else{ //remaining x is negative, must turn left
-				direction << "Hard left" << std::endl;
-
-				arbArray[0] = 1;
-				arbArray[1] = 0.5;
+				direction << "Hard left";
 			}
 		}
-		else if(std::atan(std::abs(dremainLong/dremainLat)) <= std::tan(1.04719755)){ //atan(|y/x|) <= tan(60 deg) and atan(|y/x|) >= tan(30 deg)
+		else if(newHeading <= std::tan(1.04719755)){ //atan(|y/x|) <= tan(60 deg) and atan(|y/x|) >= tan(30 deg)
 			//If the heading angle is less than 60 deg but greater than 30 deg, normal turn left/right.
 			if(dremainLat == std::abs(dremainLat)){ //remaining x is positive, must turn right
-				direction << "Mid right" << std::endl;
-
-				arbArray[4] = 0.5;
-				arbArray[5] = 1;
-				arbArray[6] = 0.5;
+				direction << "Mid right";
 			}
 			else{ //remaining x is negative, must turn left
-				direction << "Mid left" << std::endl;
-				arbArray[0] = 0.5;
-				arbArray[1] = 1;
-				arbArray[2] = 0.5;
+				direction << "Mid left";
 			}
 		}
-		else if(std::atan(std::abs(dremainLong/dremainLat)) <= std::tan(1.48352986)){ //atan(|y/x|) <= tan(85 deg) and atan(|y/x|) >= tan(60 deg)
+		else if(newHeading <= std::tan(1.48352986)){ //atan(|y/x|) <= tan(85 deg) and atan(|y/x|) >= tan(60 deg)
 			//If the heading angle is less than 85 deg but greater than 60 deg, slight turn left/right.
 			if(dremainLat == std::abs(dremainLat)){ //remaining x is positive, must turn right
-				direction << "Slight right" << std::endl;
-				arbArray[3] = 0.5;
-				arbArray[4] = 1;
-				arbArray[5] = 0.5;
+				direction << "Slight right";
 			}
 			else{ //remaining x is negative, must turn left
-				direction << "Slight left" << std::endl;
-				arbArray[1] = 0.5;
-				arbArray[2] = 1;
-				arbArray[3] = 0.5;
+				direction << "Slight left";
 			}
 		}
 		else{ //If the waypoint is within a cone +-10 degrees from straight, the rover will drive straight ahead.
-			direction << "Straight ahead" << std::endl;
-			arbArray[2] = 0.5;
-			arbArray[3] = 1;
-			arbArray[4] = 0.5;
+			direction << "Straight ahead";
 		}
-		std::cout << direction.str() << std::endl;
+		std::cout << direction.str() << "! Angle is " << newHeading << std::endl << std::endl;
+		// std::cout << 
 	}
 	catch (...){
-		std::cout << "No setpoint" << std::endl;
+		std::cout << "Error in FindNewHeading" << std::endl;
 	}
 }
 
@@ -181,9 +173,13 @@ void WaypointFinder::GPSCallback(const sensor_msgs::NavSatFix &msg){
 
 		currentLat = msg.latitude;
 		currentLong = msg.longitude;
+
+		IMUHeading = static_cast<double>(pubimu.data);
+
 		currwp = WaypointFinder::Dist2WP(currentLat, currentLong);
-		WaypointFinder::FindGPSHeading(currentLat, currentLong, currwp);
-		// WaypointFinder::FindNewHeading(currentLat, currentLong, currwp);
+		GPSHeading = WaypointFinder::FindGPSHeading(currentLat, currentLong, currwp);
+		// std::cout << "GPS Heading: " << GPSHeading << std::endl;
+		WaypointFinder::FindNewHeading(currentLat, currentLong, GPSHeading, IMUHeading, currwp);
 
 	}
 	direction.str(std::string());
