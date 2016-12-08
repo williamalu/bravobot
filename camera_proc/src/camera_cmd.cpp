@@ -155,7 +155,7 @@ void messageCallback(const std_msgs::Int16MultiArray input){
         }
         avgx/= far.size();
         msg.linear.x = .5;
-        msg.linear.z = mapAngular(avgx);
+        msg.angular.z = mapAngular(avgx);
         pub.publish(msg);
         std::cout << "Object is far away" <<std::endl;
     }
