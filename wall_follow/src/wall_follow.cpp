@@ -17,7 +17,7 @@
 //#define angleCoef 1    // Proportional constant for angle controller
 //#define DIRECTION 1 // 1 for wall on the left side of the robot (-1 for the right side).
 // #define PUBLISHER_TOPIC "/syros/base_cmd_vel"
-#define PUBLISHER_TOPIC "/lidar_cmd_vel"
+#define PUBLISHER_TOPIC "/lidar/cmd_vel"
 // #define SUBSCRIBER_TOPIC "/syros/laser_laser"
 #define SUBSCRIBER_TOPIC "/scan"
 
