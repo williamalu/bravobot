@@ -176,7 +176,6 @@ void IMUCallback(const geometry_msgs::Vector3Stamped::ConstPtr &msg){
 
 void lidCallback(const std_msgs::Int16MultiArray lidPos){
     leftLidObst = lidPos[0];
-    frontLidObst = lidPos[1];
     rightLidObst = lidPos[2];
 }
 
