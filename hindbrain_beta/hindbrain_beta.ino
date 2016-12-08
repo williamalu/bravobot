@@ -54,7 +54,7 @@ void loop()
 
   //ROS
   nh.spinOnce();
-  
+  delay(30);
 }
 
 

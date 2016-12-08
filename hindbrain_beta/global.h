@@ -7,15 +7,15 @@ ros::Subscriber<geometry_msgs::Twist> cmd("cmd_vel", &cmdvel_cb);
 void enable_cb( const std_msgs::Bool& msg); //callback prototype, find definition in ROS.ino
 ros::Subscriber<std_msgs::Bool> enable("hind/enable", &enable_cb);
 
-std_msgs::Int16 portspeed_msg;
-std_msgs::Int16 starboardspeed_msg;
-std_msgs::Int32 millis_msg;
-ros::Publisher pub_portspeed("motor/port", &portspeed_msg);
-ros::Publisher pub_starboardspeed("motor/starboard", &starboardspeed_msg);
-ros::Publisher pub_millis("hind/millis", &millis_msg);
+//std_msgs::Int16 portspeed_msg;
+//std_msgs::Int16 starboardspeed_msg;
+//std_msgs::Int32 millis_msg;
+//ros::Publisher pub_portspeed("motor/port", &portspeed_msg);
+//ros::Publisher pub_starboardspeed("motor/starboard", &starboardspeed_msg);
+//ros::Publisher pub_millis("hind/millis", &millis_msg);
 
 //std_msgs::String state_msg;
-std_msgs::Int16 state_msg;
+std_msgs::String state_msg;
 ros::Publisher pub_state("hind/state", &state_msg);
 
 volatile boolean ROSReady = false;
@@ -44,9 +44,10 @@ Adafruit_NeoPixel led_ring_port  = Adafruit_NeoPixel(12, LED_RING_PORT,  NEO_GRB
 Adafruit_NeoPixel led_ring_starboard = Adafruit_NeoPixel(12, LED_RING_STARBOARD, NEO_GRBW + NEO_KHZ800);
 Adafruit_NeoPixel led_strip_port  = Adafruit_NeoPixel(8,  LED_STRIP_PORT,   NEO_GRBW + NEO_KHZ800);
 Adafruit_NeoPixel led_strip_starboard = Adafruit_NeoPixel(8,  LED_STRIP_STARBOARD,  NEO_GRBW + NEO_KHZ800);
-uint32_t red   = led_ring_port.Color(50, 0, 0, 0);
-uint32_t white = led_ring_port.Color(0, 0, 0, 50);
+uint32_t red   = led_ring_port.Color(255, 0, 0, 0);
+uint32_t white = led_ring_port.Color(0, 0, 0, 255);
 uint32_t off   = led_ring_port.Color(0, 0, 0, 0);
+uint32_t yellow = led_ring_port.Color(255, 50, 0, 0);
 boolean blinkState = true;
 
 //IR

@@ -46,11 +46,6 @@ void LED_ok(){
 }
 
 void LED_estop(){
-  if(last_LED_refresh - millis() > LED_BLINK_INTERVAL) {
-      blinkState = !blinkState; 
-      last_LED_refresh = millis();
-  }
-  if(blinkState) {
       for (int i = 0; i <= 11; i++) {
           led_ring_port.setPixelColor(i, red);
           led_ring_starboard.setPixelColor(i, red);
@@ -59,31 +54,16 @@ void LED_estop(){
         led_strip_port.setPixelColor(i, red);
         led_strip_starboard.setPixelColor(i, red);
       }
-  }
-  else {
-      for (int i = 0; i <= 11; i++) {
-          led_ring_port.setPixelColor(i, off);
-          led_ring_starboard.setPixelColor(i, off);
-        }
-      for (int i = 0; i <= 7; i++) {
-        led_strip_port.setPixelColor(i, off);
-        led_strip_starboard.setPixelColor(i, off);
-      }
-  }
 }
 
 void LED_softstop(){
-  for (int i = 0; i <= 11; i = i + 2) {
-      led_ring_port.setPixelColor(i, white);
-      led_ring_starboard.setPixelColor(i, white);
+    for (int i = 0; i <= 11; i++) {
+        led_ring_port.setPixelColor(i, yellow);
+        led_ring_starboard.setPixelColor(i, yellow);
+      }
+    for (int i = 0; i <= 7; i++) {
+      led_strip_port.setPixelColor(i, yellow);
+      led_strip_starboard.setPixelColor(i, yellow);
     }
-  for (int i = 1; i <= 11; i = i + 2) {
-    led_ring_port.setPixelColor(i, red);
-    led_ring_starboard.setPixelColor(i, red);
-  }
-  for (int i = 0; i <= 7; i++) {
-    led_strip_port.setPixelColor(i, red);
-    led_strip_starboard.setPixelColor(i, red);
-  }
 }
 

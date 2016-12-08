@@ -5,7 +5,7 @@ void setupIR() {
   pinMode(IR_PINS[3], INPUT);
 }
 
-//boolean is_IR_ok() {  
+boolean is_IR_ok() {  
 //  IR_Val[0] = analogRead(IR_PINS[0]) / 4;
 //  IR_Val[1] = analogRead(IR_PINS[1]) / 4;
 //
@@ -24,10 +24,5 @@ void setupIR() {
 //    IR_range_exceed_count = 0;
 //  }
 //  
-//  return true;
-//}
-
-boolean is_IR_ok() {
   return true;
 }
-
