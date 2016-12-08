@@ -3,12 +3,16 @@
 //
 
 #include <std_msgs/Int16MultiArray.h>
+#include <std_msgs/Float32MultiArray.h>
 #include <geometry_msgs/Twist.h>
+#include <geometry_msgs/Vector3Stamped.h>
 #include <string>
 #include <vector>
 #include <ros/ros.h>
 
 ros::Publisher pub;
+
+geometry_msgs::Twist msg;
 
 float heading=-100;
 float savedHeading=-100;
@@ -39,7 +43,7 @@ void messageCallback(const std_msgs::Int16MultiArray input){
     std::vector<int16_t> obst_pos;
     std::vector<int16_t> obst_height;
     std::vector<int16_t> max_heights;
-    geometry_msgs::Twist msg;
+
     msg.linear.x = 0.3;
     msg.angular.z = -0.15;
 
@@ -59,7 +63,6 @@ void messageCallback(const std_msgs::Int16MultiArray input){
 //    for (std::vector<short>::const_iterator i = max_heights.begin(); i != max_heights.end(); ++i)
 //        std::cout << *i << ' ';
 //    std::cout << "------" << std::endl;
-
 
     for (int i = 0; i<input.data.size(); i+=4){
         // float y = input.data[i+1];
@@ -157,10 +160,10 @@ void messageCallback(const std_msgs::Int16MultiArray input){
     }
 }
 
-void IMUCallback(const geometry_msgs::Vector3Stamped::ConstPtr &msg){
-    float headingx = msg->vector.x;
-    float headingy = msg->vector.y;
-    float headingz = msg->vector.z;
+void IMUCallback(const geometry_msgs::Vector3Stamped::ConstPtr &IMUmsg){
+    float headingx = IMUmsg->vector.x;
+    float headingy = IMUmsg->vector.y;
+    float headingz = IMUmsg->vector.z;
 
     float compassHeading = (std::atan2(headingy,headingx) * 180.00000) / 3.14159265359;
 
@@ -174,10 +177,9 @@ void IMUCallback(const geometry_msgs::Vector3Stamped::ConstPtr &msg){
     // std::cout << "Current heading: " << compassHeading << std::endl;
 }
 
-void lidCallback(const std_msgs::Int16MultiArray lidPos){
-    leftLidObst = lidPos[0];
-    frontLidObst = lidPos[1];
-    rightLidObst = lidPos[2];
+void lidCallback(const std_msgs::Float32MultiArray lidPos){
+    leftLidObst = lidPos.data[0];
+    rightLidObst = lidPos.data[1];
 }
 
 int main(int argc, char **argv) {
