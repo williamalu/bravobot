@@ -177,7 +177,7 @@ void IMUCallback(const geometry_msgs::Vector3Stamped::ConstPtr &IMUmsg){
     // std::cout << "Current heading: " << compassHeading << std::endl;
 }
 
-void lidCallback(const std_msgs::Float32MultiArray lidPos){
+void lidCallback(const std_msgs::Float32MultiArray lidPos) {
     leftLidObst = lidPos.data[0];
     rightLidObst = lidPos.data[1];
 }

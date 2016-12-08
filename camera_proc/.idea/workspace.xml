@@ -131,8 +131,8 @@
       <file leaf-file-name="camera_cmd.cpp" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/camera_cmd.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="426">
-              <caret line="64" column="41" selection-start-line="64" selection-start-column="41" selection-end-line="64" selection-end-column="41" />
+            <state relative-caret-position="2580">
+              <caret line="178" column="0" selection-start-line="178" selection-start-column="0" selection-end-line="178" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -623,12 +623,12 @@
       <workItem from="1481134614338" duration="5000" />
       <workItem from="1481151129532" duration="11715000" />
       <workItem from="1481168409841" duration="2091000" />
-      <workItem from="1481171495330" duration="731000" />
+      <workItem from="1481171495330" duration="895000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="29311000" />
+    <option name="totallyTimeSpent" value="29475000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="65" y="79" width="1516" height="790" extended-state="0" />
@@ -1077,8 +1077,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/camera_cmd.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="426">
-          <caret line="64" column="41" selection-start-line="64" selection-start-column="41" selection-end-line="64" selection-end-column="41" />
+        <state relative-caret-position="2580">
+          <caret line="178" column="0" selection-start-line="178" selection-start-column="0" selection-end-line="178" selection-end-column="0" />
           <folding />
         </state>
       </provider>
