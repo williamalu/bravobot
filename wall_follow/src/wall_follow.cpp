@@ -37,7 +37,7 @@ float maxSpd = 0.65;
 float minObstDist= 0.10;
 float blockDist = 1.25;
 float angleCoef = 1;
-float midCoef = 0.05;
+float midCoef = 0.5;
 float maxLeftSpd = -0.35;
 float angleJump = 0.3;
 //int lookAhead = 50;
@@ -57,10 +57,10 @@ void publishMessage(double diffE_right, double diffE_left, double distMin_left, 
     double rotVel_left = 0;
 
     if(block){
-        rotVel_left = setPt + -(P * ((e_left) + D * diffE_left));
+        rotVel_left = setPt + -(P * (e_left) + D * diffE_left);
     } else {
         rotVel_left = setPt + -(P * e_left + D * diffE_left);
-// + angleCoef * (angleMin_left);
+        // + angleCoef * (angleMin_left);
     }
 
     double rotVel_right = 0;
