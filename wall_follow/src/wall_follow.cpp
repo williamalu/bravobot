@@ -28,17 +28,17 @@ ros::Publisher lidarPub;
 ros::Publisher lidarPosPub;
 double e_left = 0;
 double e_right = 0;
-float setPt = -0.05;
+float setPt = -0.05;    
 float wallDist = 1.5;
 float P = 0.50;
-float D = 0.18;
-float minSpd = 0.15;
-float maxSpd = 0.40;
+float D = 0.25;
+float minSpd = 0.30;
+float maxSpd = 0.65;
 float minObstDist= 0.10;
 float blockDist = 1.25;
 float angleCoef = 1;
-float midCoef = 0.5;
-float maxLeftSpd = -0.20;
+float midCoef = 0.05;
+float maxLeftSpd = -0.35;
 float angleJump = 0.3;
 //int lookAhead = 50;
 bool block = false;
@@ -57,10 +57,10 @@ void publishMessage(double diffE_right, double diffE_left, double distMin_left, 
     double rotVel_left = 0;
 
     if(block){
-        rotVel_left = setPt + -(P * (e_left) + D * diffE_left);
+        rotVel_left = setPt + -(P * ((e_left) + D * diffE_left));
     } else {
         rotVel_left = setPt + -(P * e_left + D * diffE_left);
-        // + angleCoef * (angleMin_left);
+// + angleCoef * (angleMin_left);
     }
 
     double rotVel_right = 0;
@@ -86,8 +86,13 @@ void publishMessage(double diffE_right, double diffE_left, double distMin_left, 
     if((std::isinf(e_left) && std::isinf(e_right))){
         rotVel = setPt;
     }
+    if(!block){
+
+    }
 
     ROS_INFO("rotVel= %f", rotVel);
+
+    msg.angular.z = rotVel;
 
     //Map speed based on angular velocity
     if(rotVel < 0){
@@ -98,15 +103,7 @@ void publishMessage(double diffE_right, double diffE_left, double distMin_left, 
         msg.linear.x = maxSpd - (maxSpd - minSpd) * (fabs(rotVel - setPt));
     }
 
-    if(e_left > 0.75) {
-        rotVel = setPt;
-        msg.linear.x = 0.20;
-    }
-
-    msg.angular.z = rotVel;
-
-
-        //publishing message
+    //publishing message
     pubMessage.publish(msg);
 
     ROS_INFO("PARAMETER VALUES: %f %f %f %f %f %f %f %f %f %f %f %f %f", P, D, minSpd, maxSpd, setPt, maxLeftSpd, wallDist, blockDist, minObstDist, angleJump, angleCoef, midCoef);
