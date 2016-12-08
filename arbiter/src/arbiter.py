@@ -21,10 +21,10 @@ class Arbiter(object):
 		rospy.Subscriber('ir/cmd_vel', Twist, self.ir_cmd_vel)
 		self.cmd_vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
 
-	def lidar_cmd_vel_cb(self, msg):
+	def lidar_cmd_vel(self, msg):
 		self.lidx = msg.linear.x
 		self.lidz = msg.linear.z
-	def cmr_cmd_vel_cb(self, msg): #camera command velocity
+	def cmr_cmd_vel(self, msg): #camera command velocity
 		self.cmrx = msg.linear.x
 		self.cmrz = msg.linear.z
 	def ir_cmd_vel(self, msg):
