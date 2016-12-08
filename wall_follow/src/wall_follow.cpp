@@ -1,4 +1,5 @@
 #include <math.h>
+#include <limits>
 #include "cmath"
 #include "geometry_msgs/Twist.h"
 #include "ros/ros.h"
@@ -58,7 +59,8 @@ void publishMessage(double diffE_right, double diffE_left, double distMin_left, 
     if(block){
         rotVel_left = setPt + -(P * ((e_left) + D * diffE_left));
     } else {
-        rotVel_left = setPt + -(P * e_left + D * diffE_left) + angleCoef * (angleMin_left);
+        rotVel_left = setPt + -(P * e_left + D * diffE_left);
+// + angleCoef * (angleMin_left);
     }
 
     double rotVel_right = 0;
@@ -165,7 +167,7 @@ void messageCallback(sensor_msgs::LaserScan msg)
         if(delta < 0.3){
             lidarDists[i] = msg.ranges[i];
         } else{
-            lidarDists[i] = 0;
+            lidarDists[i] = std::numeric_limits<double>::infinity();
         }
 
         lastScan[i] = msg.ranges[i];
@@ -190,9 +192,9 @@ void messageCallback(sensor_msgs::LaserScan msg)
     int minIndex_right = one_third-1;
     int minIndex_middle = two_thirds-1;
     int minIndex_left = size;
-    double distMin_right = 10;
-    double distMin_middle = 10;
-    double distMin_left = 10;
+    double distMin_right =  std::numeric_limits<double>::infinity();
+    double distMin_middle =  std::numeric_limits<double>::infinity();
+    double distMin_left =  std::numeric_limits<double>::infinity();
 
     //This cycle goes through array and finds minimum
     for(int i = 50; i < one_third; i++)
@@ -227,6 +229,10 @@ void messageCallback(sensor_msgs::LaserScan msg)
     distMin_middle = lidarDists[minIndex_middle];
     distMin_left = lidarDists[minIndex_left];
     //double distFront = msg.ranges[size/2];
+    
+    if(distMin_left < minObstDist){
+        distMin_left = std::numeric_limits<double>::infinity();
+    }
 
     double diffE_left = 0;
     double diffE_right = 0;
