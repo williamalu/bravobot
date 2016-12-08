@@ -91,4 +91,3 @@ public:
 	ros::Publisher pubvel;
 	ros::Publisher pubIMU;
 };
-
