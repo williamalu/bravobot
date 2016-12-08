@@ -22,7 +22,7 @@ public:
 	void GPSCallback(const sensor_msgs::NavSatFix &msg);
 	void IMUCallback(const geometry_msgs::Vector3Stamped::ConstPtr &msg);
 
-	int Dist2WP(float, float);
+	int Dist2WP(float, float, int);
 	float FindGPSHeading(float, float, int);
 	void FindNewHeading(float, float, float, double, int);
 

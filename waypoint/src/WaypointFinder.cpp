@@ -7,21 +7,22 @@
 
 /*######################################## HEADING AND DISTANCE CALCULATIONS ##############################################*/
 
-int WaypointFinder::Dist2WP(float passedLat, float passedLong){
-	for ( i=0; i <= 4; i++ ) {
-		// For waypoint i in list waypoints, check if waypoint exists (default value is (0,0))
-		// Once a valid waypoint is found, set currwp (currentwaypoint) to waypoint i.
-		if ((waypointLats[i] == 0.00000) && (waypointLongs[i] == 0.00000)){
-			//Nothing happens
-		}
-		else{ //If waypoint i in waypoints exists, make it our current waypoint.
-			// std::cout << "Waypoint # set to: " << i << std::endl;
-			currwp = i;
-			break;
-		}
-	}
+int WaypointFinder::Dist2WP(float passedLat, float passedLong, int passedwp){
+	// for ( i=0; i <= 4; i++ ) {
+	// 	// For waypoint i in list waypoints, check if waypoint exists (default value is (0,0))
+	// 	// Once a valid waypoint is found, set currwp (currentwaypoint) to waypoint i.
+	// 	if ((waypointLats[i] == 0.00000) && (waypointLongs[i] == 0.00000)){
+	// 		//Nothing happens
+	// 	}
+	// 	else{ //If waypoint i in waypoints exists, make it our current waypoint.
+	// 		// std::cout << "Waypoint # set to: " << i << std::endl;
+	// 		currwp = i;
+	// 		break;
+	// 	}
+	// }
+	currwp = passedwp;
 		
-	std::cout << "Current waypoint is waypoint " << currwp << " at (" << waypointLats[currwp] << ", " << waypointLongs[currwp] << ")" << std::endl;
+	std::cout << "Current waypoint is waypoint " << currwp << " at (" << waypointLats[currwp] << "N, " << waypointLongs[currwp] << "W)" << std::endl;
 
 	R = 6371.00000; //Radius of the earth in km
 
@@ -39,15 +40,27 @@ int WaypointFinder::Dist2WP(float passedLat, float passedLong){
 	calc = 2 * (std::atan2(std::sqrt(a), std::sqrt(1.00000-a)));
 	arcDist = R * calc;
 
-	if (arcDist <= 3.00000){
-		waypointFound == false;
-		std::cout << "Waypoint " << currwp << " found." << std::endl;
-	}
-
-	std::cout << "Distance remaining: " << arcDist << " km" << std::endl;
+	std::cout << "Distance remaining: " << arcDist << " m" << std::endl;
 
 	std::cout << "Current GPS: (" << currentLat << "N, " << currentLong << "W)" << std::endl;
-	std::cout << "Waypoint GPS: (" << wpLat << "N, " << wpLong << "W)" << std::endl;
+	// std::cout << "Waypoint GPS: (" << wpLat << "N, " << wpLong << "W)" << std::endl;
+
+	if (arcDist <= 1.50000){
+		waypointFound == false;
+
+		if (counter <= 1){
+			std::cout << std::endl << "Waypoint " << currwp << " found. I'm here!" << std::endl << std::endl;
+
+			waypointLats[currwp] == 0.00000;
+			waypointLongs[currwp] == 0.00000;
+			
+			currwp = currwp + 1;
+		}
+		counter = counter + 1;
+	}
+	else{
+		counter = 1;
+	}
 
 	return currwp;
 }
@@ -166,7 +179,7 @@ void WaypointFinder::GPSCallback(const sensor_msgs::NavSatFix &msg){
 		std::cout << "Next WP" << std::endl;
 		waypointLats[currwp] = 0.00000; //Set the current waypoint latitude and longitude to default values, clearing them off the list.
 		waypointLongs[currwp] = 0.00000;
-		counter = 1; //Reset previous heading weights in arbiter array (arbArray) to 0
+		// counter = 1; //Reset previous heading weights in arbiter array (arbArray) to 0
 		waypointFound = false;
 	}
 	else{
@@ -176,7 +189,7 @@ void WaypointFinder::GPSCallback(const sensor_msgs::NavSatFix &msg){
 
 		IMUHeading = static_cast<double>(pubimu.data);
 
-		currwp = WaypointFinder::Dist2WP(currentLat, currentLong);
+		currwp = WaypointFinder::Dist2WP(currentLat, currentLong, currwp);
 		GPSHeading = WaypointFinder::FindGPSHeading(currentLat, currentLong, currwp);
 		// std::cout << "GPS Heading: " << GPSHeading << std::endl;
 		WaypointFinder::FindNewHeading(currentLat, currentLong, GPSHeading, IMUHeading, currwp);
@@ -199,21 +212,22 @@ void WaypointFinder::init(int argc, char* argv[]){
 	wpLat = 0;
 	wpLong = 0;
 
+	currwp = 0;
 
     std::cout << std::setprecision(7); // show 16 digits
 
 	int arbArray [7] = { 0,0,0,0,0,0,0 };
 
-	waypointLats[0] = 20.00009;
-	waypointLats[1] = 20.00000;
+	waypointLats[0] = 42.29320;
+	waypointLats[1] = 42.29338;
 	waypointLats[2] = 20.00000;
 	waypointLats[3] = 20.00000;
 	waypointLats[4] = 20.00000;
 	
-	waypointLongs[0] = 0.00000;
-	waypointLongs[1] = 20.00000;
-	waypointLongs[2] = 20.00000;
-	waypointLongs[3] = 20.00000;
+	waypointLongs[0] = -71.26398;
+	waypointLongs[1] = -71.26366;
+	waypointLongs[2] = 0.00000;
+	waypointLongs[3] = 0.00000;
 	waypointLongs[4] = 20.00000;
 
 	// subInput = nh.subscribe("/wplist", 10, &WaypointFinder::InputCallback, this); //You cannot run subInput and subWPfinder at the same time.
