@@ -9,10 +9,13 @@ ros::Subscriber<std_msgs::Bool> enable("hind/enable", &enable_cb);
 
 std_msgs::Int16 portspeed_msg;
 std_msgs::Int16 starboardspeed_msg;
+std_msgs::Int32 millis_msg;
 ros::Publisher pub_portspeed("motor/port", &portspeed_msg);
 ros::Publisher pub_starboardspeed("motor/starboard", &starboardspeed_msg);
+ros::Publisher pub_millis("hind/millis", &millis_msg);
 
-std_msgs::String state_msg;
+//std_msgs::String state_msg;
+std_msgs::Int16 state_msg;
 ros::Publisher pub_state("hind/state", &state_msg);
 
 volatile boolean ROSReady = false;
