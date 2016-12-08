@@ -23,7 +23,8 @@ public:
 	void IMUCallback(const geometry_msgs::Vector3Stamped::ConstPtr &msg);
 
 	int Dist2WP(float, float);
-	void FindHeading(float, float, int);
+	void FindGPSHeading(float, float, int);
+	void FindNewHeading(float, float, int);
 
 
 public:	
@@ -65,7 +66,9 @@ public:
 	float waypointLong;
 	float dremainLat;
 	float dremainLong;
-	// float waypoints [5];
+
+	float GPSHeading;
+	float compassHeading;
 
 	int arbArray [7];
 

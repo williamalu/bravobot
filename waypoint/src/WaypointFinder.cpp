@@ -5,42 +5,7 @@
 #include "WaypointFinder.h"
 #include <cmath>
 
-void WaypointFinder::InputCallback(const std_msgs::Float64MultiArray::ConstPtr &msg){
-	if(hasInput == false){
-	 	hasInput = true;
-	}
-
-	waypointLat = msg->data[0];
-	waypointLong = msg->data[1];
-
-	std::cout << "Input exists" << std::endl;
-}
-
-void WaypointFinder::IMUCallback(const geometry_msgs::Vector3Stamped::ConstPtr &msg){
-	headingx = msg->vector.x;
-	headingy = msg->vector.y;
-	headingz = msg->vector.z;
-}
-
-void WaypointFinder::GPSCallback(const sensor_msgs::NavSatFix &msg){
-	if (waypointFound == true){ //If a waypoint was found...
-		std::cout << "Next WP" << std::endl;
-		waypointLats[currwp] = 0.00000; //Set the current waypoint latitude and longitude to default values, clearing them off the list.
-		waypointLongs[currwp] = 0.00000;
-		counter = 1; //Reset previous heading weights in arbiter array (arbArray) to 0
-		waypointFound = false;
-	}
-	else{
-
-		currentLat = msg.latitude;
-		currentLong = msg.longitude;
-		currwp = WaypointFinder::Dist2WP(currentLat, currentLong);
-		WaypointFinder::FindHeading(currentLat, currentLong, currwp);
-
-	}
-	direction.str(std::string());
-	direction.clear();
-}
+/*######################################## HEADING AND DISTANCE CALCULATIONS ##############################################*/
 
 int WaypointFinder::Dist2WP(float passedLat, float passedLong){
 	for ( i=0; i <= 4; i++ ) {
@@ -56,8 +21,7 @@ int WaypointFinder::Dist2WP(float passedLat, float passedLong){
 		}
 	}
 		
-
-	std::cout << "Current waypoint is waypoint " << currwp << " at (" << waypointLats[currwp]<< ", " << waypointLongs[currwp] << ")" << std::endl;
+	std::cout << "Current waypoint is waypoint " << currwp << " at (" << waypointLats[currwp] << ", " << waypointLongs[currwp] << ")" << std::endl;
 
 	R = 6371.00000; //Radius of the earth in km
 
@@ -71,8 +35,8 @@ int WaypointFinder::Dist2WP(float passedLat, float passedLong){
     dLong = currentLong - wpLong;
 
 	//Haversine formula- calculate arc distance between two GPS points
-	a = std::pow(std::sin(dLat/2),2) + std::cos(wpLat) * std::cos(currentLat) * std::pow(sin(dLong/2),2);
-	calc = 2 * (std::atan2(std::sqrt(a), std::sqrt(1-a)));
+	a = std::pow(std::sin(dLat/2.00000),2.00000) + std::cos(wpLat) * std::cos(currentLat) * std::pow(sin(dLong/2.00000),2.00000);
+	calc = 2 * (std::atan2(std::sqrt(a), std::sqrt(1.00000-a)));
 	arcDist = R * calc;
 
 	if (arcDist <= 3.00000){
@@ -83,12 +47,12 @@ int WaypointFinder::Dist2WP(float passedLat, float passedLong){
 	std::cout << "Distance remaining: " << arcDist << " km" << std::endl;
 
 	std::cout << "Current GPS: (" << currentLat << "N, " << currentLong << "W)" << std::endl;
-	std::cout << "Waypoint GPS: (" << currentLat << "N, " << currentLong << "W)" << std::endl;
+	std::cout << "Waypoint GPS: (" << wpLat << "N, " << wpLong << "W)" << std::endl;
 
 	return currwp;
 }
 
-void WaypointFinder::FindHeading(float passedLat, float passedLong, int passWP){
+void WaypointFinder::FindGPSHeading(float passedLat, float passedLong, int passWP){
 	currentLat = passedLat;
 	currentLong = passedLong;
 	passWP = currwp;
@@ -96,14 +60,20 @@ void WaypointFinder::FindHeading(float passedLat, float passedLong, int passWP){
 	wpLat = waypointLats[currwp];
 	wpLong = waypointLongs[currwp];
 
+	//Find remaining distance to waypoint
+	dremainLat = currentLat - wpLat;
+	dremainLong = currentLong - wpLong;
+
+	GPSHeading = std::atan(std::abs(dremainLong/dremainLat));
+	std::cout << (GPSHeading * 57.2957795) << " degrees to waypoint" << std::endl;
+}
+
+void WaypointFinder::FindNewHeading(float passedLat, float passedLong, int passWP){
+
 	try{
 		for ( i=0; i < 7; i++ ) {
 			arbArray [i] = 0;
 		}
-
-		//Find remaining distance to waypoint
-		dremainLat = currentLat - wpLat;
-		dremainLong = currentLong - wpLong;
 
 		if(std::atan(std::abs(dremainLong/dremainLat)) <= std::tan(0.523598776)){ //atan(|y/x|) <= tan(30 deg)
 			//If the heading angle to the next waypoint is less than 30 deg, hard turn left/right
@@ -162,9 +132,63 @@ void WaypointFinder::FindHeading(float passedLat, float passedLong, int passWP){
 	catch (...){
 		std::cout << "No setpoint" << std::endl;
 	}
-
 }
 
+
+/*######################################## CALLBACK FUNCTIONS ##############################################*/
+
+
+void WaypointFinder::InputCallback(const std_msgs::Float64MultiArray::ConstPtr &msg){
+	if(hasInput == false){
+	 	hasInput = true;
+	}
+
+	waypointLat = msg->data[0];
+	waypointLong = msg->data[1];
+
+	std::cout << "Input exists" << std::endl;
+}
+
+void WaypointFinder::IMUCallback(const geometry_msgs::Vector3Stamped::ConstPtr &msg){
+	headingx = msg->vector.x;
+	headingy = msg->vector.y;
+	headingz = msg->vector.z;
+
+	compassHeading = (std::atan2(headingy,headingx) * 180.00000) / 3.14159265359;
+  
+	// Normalize to 0-360
+	if (compassHeading < 0)
+	{
+	compassHeading = 360.00000 + compassHeading;
+	}
+
+	// std::cout << "Current heading: " << compassHeading << std::endl;
+}
+
+void WaypointFinder::GPSCallback(const sensor_msgs::NavSatFix &msg){
+	subIMU = nh.subscribe("/imu/mag", 10, &WaypointFinder::IMUCallback, this);
+	if (waypointFound == true){ //If a waypoint was found...
+		std::cout << "Next WP" << std::endl;
+		waypointLats[currwp] = 0.00000; //Set the current waypoint latitude and longitude to default values, clearing them off the list.
+		waypointLongs[currwp] = 0.00000;
+		counter = 1; //Reset previous heading weights in arbiter array (arbArray) to 0
+		waypointFound = false;
+	}
+	else{
+
+		currentLat = msg.latitude;
+		currentLong = msg.longitude;
+		currwp = WaypointFinder::Dist2WP(currentLat, currentLong);
+		WaypointFinder::FindGPSHeading(currentLat, currentLong, currwp);
+		// WaypointFinder::FindNewHeading(currentLat, currentLong, currwp);
+
+	}
+	direction.str(std::string());
+	direction.clear();
+}
+
+
+/*######################################## INIT FUNCTION AND MAIN LOOP ##############################################*/
 
 
 void WaypointFinder::init(int argc, char* argv[]){
@@ -176,9 +200,12 @@ void WaypointFinder::init(int argc, char* argv[]){
 	wpLat = 0;
 	wpLong = 0;
 
+
+    std::cout << std::setprecision(7); // show 16 digits
+
 	int arbArray [7] = { 0,0,0,0,0,0,0 };
 
-	waypointLats[0] = 20.00001;
+	waypointLats[0] = 20.00009;
 	waypointLats[1] = 20.00000;
 	waypointLats[2] = 20.00000;
 	waypointLats[3] = 20.00000;
@@ -195,9 +222,8 @@ void WaypointFinder::init(int argc, char* argv[]){
 	// subInput = nh.subscribe("/wplist", 10, &WaypointFinder::InputCallback, this); //You cannot run subInput and subWPfinder at the same time.
 
 	subGPS = nh.subscribe("/fix", 10, &WaypointFinder::GPSCallback, this);
-	// subWPlist = nh.subscribe("/fix", 10, &WaypointFinder::GPSCallback, this);
 
-	subIMU = nh.subscribe("/imu/mag", 10, &WaypointFinder::IMUCallback, this);
+	// subIMU = nh.subscribe("/imu/mag", 10, &WaypointFinder::IMUCallback, this);
 
 	pubvel = nh.advertise<std_msgs::String>("velocity", 1000);
 	// pubwp = nh.advertise<std_msgs::Float64MultiArray>("wplist", 1000);
