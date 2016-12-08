@@ -220,8 +220,6 @@ void WaypointFinder::init(int argc, char* argv[]){
 	waypointLongs[3] = 20.00000;
 	waypointLongs[4] = 20.00000;
 
-	// ros::Publisher wp_pub = n.advertise<std_msgs::String>("wplist", 1000);
-
 	// subInput = nh.subscribe("/wplist", 10, &WaypointFinder::InputCallback, this); //You cannot run subInput and subWPfinder at the same time.
 
 	subGPS = nh.subscribe("/fix", 10, &WaypointFinder::GPSCallback, this);
@@ -229,7 +227,7 @@ void WaypointFinder::init(int argc, char* argv[]){
 	// subIMU = nh.subscribe("/imu/mag", 10, &WaypointFinder::IMUCallback, this);
 
 	pubvel = nh.advertise<std_msgs::String>("velocity", 1000);
-	pubIMU = nh.advertise<std_msgs::Float64>("imu", 1000);
+	pubIMU = nh.advertise<std_msgs::Float64>("imu_data", 1000);
 
 	ros::Rate loop_rate(10);
 
