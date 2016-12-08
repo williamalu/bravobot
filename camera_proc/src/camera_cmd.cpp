@@ -192,7 +192,7 @@ int main(int argc, char **argv) {
     ros::Subscriber imu = nh.subscribe("imu_data", 10, IMUCallback);
     ros::Subscriber lidsub = nh.subscribe("lidPos",10, lidCallback);
     
-    pub = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
+    pub = nh.advertise<geometry_msgs::Twist>("cmr/cmd_vel", 1000);
     ros::spin();
 }
 

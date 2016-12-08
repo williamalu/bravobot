@@ -1,4 +1,5 @@
 #include <math.h>
+#include <limits>
 #include "cmath"
 #include "geometry_msgs/Twist.h"
 #include "ros/ros.h"
@@ -10,14 +11,14 @@
 //#define PI 3.141592
 
 #define SUBSCRIBER_BUFFER_SIZE 1  // Size of buffer for subscriber.
-#define PUBLISHER_BUFFER_SIZE 10  // Size of buffer for publisher.
+#define PUBLISHER_BUFFER_SIZE 1000  // Size of buffer for publisher.
 //#define MAX_SPEED 0.5
 //#define P 10    // Proportional constant for controller
 //#define D 5     // Derivative constant for controller
 //#define angleCoef 1    // Proportional constant for angle controller
 //#define DIRECTION 1 // 1 for wall on the left side of the robot (-1 for the right side).
 // #define PUBLISHER_TOPIC "/syros/base_cmd_vel"
-#define PUBLISHER_TOPIC "/lidar_cmd_vel"
+#define PUBLISHER_TOPIC "/lidar/cmd_vel"
 // #define SUBSCRIBER_TOPIC "/syros/laser_laser"
 #define SUBSCRIBER_TOPIC "/scan"
 
@@ -36,15 +37,15 @@ float maxSpd = 0.65;
 float minObstDist= 0.10;
 float blockDist = 1.25;
 float angleCoef = 1;
-float midCoef = 0.05;
+float midCoef = 0.5;
 float maxLeftSpd = -0.35;
 float angleJump = 0.3;
 //int lookAhead = 50;
 bool block = false;
 float lastScan[512];
-int count = 0;
-double prevMinAngles[3] = {0.0, 0.0, 0.0};
+double prevMinAngles[3] = {1.0, 1.0, 1.0};
 double prevWallDist = 0;
+double switchAngle = 0;
 
 //Publisher
 void publishMessage(double diffE_right, double diffE_left, double distMin_left, double distMin_middle, double angleMin_right, double angleMin_middle, double angleMin_left)
@@ -56,9 +57,10 @@ void publishMessage(double diffE_right, double diffE_left, double distMin_left, 
     double rotVel_left = 0;
 
     if(block){
-        rotVel_left = setPt + -(P * ((e_left) + D * diffE_left));
+        rotVel_left = setPt + -(P * (e_left) + D * diffE_left);
     } else {
-        rotVel_left = setPt + -(P * e_left + D * diffE_left) + angleCoef * (angleMin_left);
+        rotVel_left = setPt + -(P * e_left + D * diffE_left);
+        // + angleCoef * (angleMin_left);
     }
 
     double rotVel_right = 0;
@@ -81,9 +83,14 @@ void publishMessage(double diffE_right, double diffE_left, double distMin_left, 
     if(rotVel < maxLeftSpd){
         rotVel = maxLeftSpd;
     }
-    if(!std::isfinite(e_left) && !std::isfinite(e_right)){
+    if((std::isinf(e_left) && std::isinf(e_right))){
         rotVel = setPt;
     }
+    if(!block){
+        
+    }
+
+    ROS_INFO("rotVel= %f", rotVel);
 
     msg.angular.z = rotVel;
 
@@ -157,10 +164,10 @@ void messageCallback(sensor_msgs::LaserScan msg)
 
     for(int i = 0; i < size; i++){
         double delta = fabs(msg.ranges[i] - lastScan[i]);
-        if(delta < 0.25){
+        if(delta < 0.3){
             lidarDists[i] = msg.ranges[i];
         } else{
-            lidarDists[i] = 0;
+            lidarDists[i] = std::numeric_limits<double>::infinity();
         }
 
         lastScan[i] = msg.ranges[i];
@@ -185,9 +192,9 @@ void messageCallback(sensor_msgs::LaserScan msg)
     int minIndex_right = one_third-1;
     int minIndex_middle = two_thirds-1;
     int minIndex_left = size;
-    double distMin_right = 10;
-    double distMin_middle = 10;
-    double distMin_left = 10;
+    double distMin_right =  std::numeric_limits<double>::infinity();
+    double distMin_middle =  std::numeric_limits<double>::infinity();
+    double distMin_left =  std::numeric_limits<double>::infinity();
 
     //This cycle goes through array and finds minimum
     for(int i = 50; i < one_third; i++)
@@ -222,11 +229,17 @@ void messageCallback(sensor_msgs::LaserScan msg)
     distMin_middle = lidarDists[minIndex_middle];
     distMin_left = lidarDists[minIndex_left];
     //double distFront = msg.ranges[size/2];
+    
+    if(distMin_left < minObstDist){
+        distMin_left = std::numeric_limits<double>::infinity();
+    }
 
     double diffE_left = 0;
     double diffE_right = 0;
 
-    if(abs(angleMin_left - prevMinAngles[2] > angleJump)){
+    ROS_INFO("%f", angleMin_left - prevMinAngles[2]);
+
+    if(angleMin_left - prevMinAngles[2] > angleJump){
         block = true;
         prevWallDist = distMin_left;
     } else{
@@ -286,11 +299,13 @@ void messageCallback(sensor_msgs::LaserScan msg)
 
     publishDists((float)distMin_left, (float)distMin_right);
 
-    for(int i = 1; i < 2; i++){
+    for(int i = 0; i < 2; i++){
         prevMinAngles[i+1] = prevMinAngles[i];
     }
 
     prevMinAngles[0] = angleMin_left;
+
+    ROS_INFO("%f %f %f", prevMinAngles[0], prevMinAngles[1], prevMinAngles[2]);
 
     //Invoking method for publishing message
     publishMessage(diffE_right, diffE_left, distMin_left, distMin_middle, angleMin_right, angleMin_middle, angleMin_left);
