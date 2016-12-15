@@ -1,6 +1,6 @@
 // Olin College Fundamentals of Robotics 2016
 // Last edited by Lydia Z. 12/7/16
-// Need to subtract vehicle heading from gps heading and find that angle. Also, account for true north?
+// Need to account for waypoints within 3 m of each other.
 
 #include "WaypointFinder.h"
 #include <cmath>
