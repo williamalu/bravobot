@@ -45,7 +45,7 @@ int WaypointFinder::Dist2WP(float passedLat, float passedLong, int passedwp){
 	std::cout << "Current GPS: (" << currentLat << "N, " << currentLong << "W)" << std::endl;
 	// std::cout << "Waypoint GPS: (" << wpLat << "N, " << wpLong << "W)" << std::endl;
 
-	if (arcDist <= 1.50000){
+	if (arcDist <= 3.00000){
 		waypointFound == false;
 
 		if (counter <= 1){
@@ -220,7 +220,7 @@ void WaypointFinder::init(int argc, char* argv[]){
 
     std::cout << std::setprecision(7); // show 16 digits
 
-	int arbArray [7] = { 0,0,0,0,0,0,0 };
+	// int arbArray [7] = { 0,0,0,0,0,0,0 };
 
 	waypointLats[0] = 42.29320;
 	waypointLats[1] = 42.29338;
