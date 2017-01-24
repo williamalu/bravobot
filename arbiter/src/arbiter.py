@@ -1,55 +1,58 @@
 #!/usr/bin/env python
 
 import rospy
+from std_msgs.msg import Int8MultiArray
 from geometry_msgs.msg import Twist
-
 import numpy as np
 
 ARRAY_SIZE = 11
 INPUTS = ['wpt', 'obst']
 
-class Arbiter(object):
-	def __init__(self):	
-		self.lidx = 0
-		self.lidz = 0
-		self.cmrx = "N/A"
-		self.cmrz = "N/A"
-		self.irx = 0
-		self.irz = 0
-		rospy.init_node('arbiter')
-		rospy.Subscriber('lidar/cmd_vel', Twist, self.lidar_cmd_vel)
-		rospy.Subscriber('cmr/cmd_vel', Twist, self.cmr_cmd_vel)
-		rospy.Subscriber('ir/cmd_vel', Twist, self.ir_cmd_vel)
-		rospy.Subscriber
+class Midbrain_Arbiter(object):
+	def __init__(self):
+		rospy.init_node('midbrain_arbiter')
+
+		self.vel_array = np.zeros([len(INPUTS), ARRAY_SIZE])
+		self.vel_array[:,5] = .1
+		self.turn_array = np.zeros([len(INPUTS), ARRAY_SIZE])
+		self.turn_array[:,5] = .1
+
+		rospy.Subscriber('wpt/cmd_vel', Int8MultiArray, self.wpt_cmd_vel_cb)
+		rospy.Subscriber('obst/cmd_vel', Int8MultiArray, self.obst_cmd_vel_cb)
+
 		self.cmd_vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=1)
 
-	def lidar_cmd_vel(self, msg):
-		self.lidx = msg.linear.x
-		self.lidz = msg.angular.z
+	def wpt_cmd_vel_cb(self, msg):
+		self.update_array(msg.data, INPUTS.index('wpt'))
 
-	def cmr_cmd_vel(self, msg): #camera command velocity
-		self.cmrx = msg.linear.x
-		self.cmrz = msg.angular.z
-	def ir_cmd_vel(self, msg):
-		self.irx = msg.linear.x
-		self.irz = msg.angular.z
+	def obst_cmd_vel_cb(self, msg):
+		self.update_array(msg.data, INPUTS.index('obst'))
+
+	def update_array(self, data, row):
+		data = np.asarray(data).reshape([2, ARRAY_SIZE])
+		self.vel_array[row] = data[0]
+		self.turn_array[row] = data[1]
 
 	def run(self):
+		vel_sum_array = np.zeros(ARRAY_SIZE)
+		turn_sum_array = np.zeros(ARRAY_SIZE)
+		#vel_sum_array = np.array([1., 2, 3, 4, 5, 6, 5, 5 ,5, 2])
+		#turn_sum_array = np.array([0., 0, 10, 1, 2, 3, 3, 2, 1, 1])
+		
+		for i in range(len(INPUTS)):
+			vel_sum_array += self.vel_array[i]
+			turn_sum_array += self.turn_array[i]
+		
+		vel = vel_sum_array.argmax()
+		turn = turn_sum_array.argmax()
 		msg = Twist()
-		if (self.cmrx!= "N/A" and self.cmrz != "N/A"):
-			msg.linear.x = self.cmrx
-			msg.angular.z = self.cmrz
-			self.cmrx = "N/A" #after reading the camera cmds, set it to null so if it dosn't publish on the next run, follow lidar cmds
-			self.cmrz = "N/A"
-		else:
-			msg.linear.x = self.lidx
-			msg.angular.z = self.lidz
-
+		msg.linear.x = 2*vel/(ARRAY_SIZE-1)-1
+		msg.angular.z = 2*turn/(ARRAY_SIZE-1)-1
 		self.cmd_vel_pub.publish(msg)
 
 if __name__ == '__main__':
-	main = Arbiter()
-	r = rospy.Rate(100)
+	main = Midbrain_Arbiter()
+	r = rospy.Rate(50)
 	while not rospy.is_shutdown():
 		main.run()
 		r.sleep()
